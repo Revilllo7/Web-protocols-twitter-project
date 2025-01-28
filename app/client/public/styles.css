@@ -14,6 +14,7 @@
         color: #333;
     }
 
+    /* Navigation */
     nav {
         display: flex;
         /* justify-content: space-around; */
@@ -66,6 +67,7 @@
         color: #291c0e;
     }
 
+    /* Main Content */
     main {
         display: flex;
         flex: 1;
@@ -73,13 +75,17 @@
         padding: 1rem;
     }
 
+    /* Footer */
     footer {
         background-color: #291c0e;
         color: #f3f4f6;
         text-align: center;
         padding: 0.5rem;
+        position: sticky;
+        bottom: 0%;
     }
 
+    /* Hashtags */
     .hashtags-section {
         flex: 1;
         font-size: 1.25rem;
@@ -104,6 +110,7 @@
         border-bottom: 1px solid #e5e7eb;
     }
 
+    /* Posts */
     .posts-section {
         flex: 3;
         background: #d1c2b5;
@@ -139,3 +146,20 @@
         color: #6b7280;
     }
 
+    /* Messages */
+    .messages {
+        text-align: center;
+        flex: 1;
+        font-size: 1.25rem;
+        max-width: 25rem;
+        min-width: none;
+        background: #beb5a9;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 0;
+    }
+
+    .message {
+        color: red;
+        text-overflow: unset;
+    }

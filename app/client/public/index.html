@@ -3,14 +3,17 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>My Dynamic App</title>
-        <link rel="stylesheet" href="/client/public/styles.css">
-        <script src="placeholder" crossorigin></script>
+        <title>Twiiter</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.0.0/umd/react.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.0.0/umd/react-dom.production.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script type="text/babel" src="App.js"></script>
     </head>
     <body>
         <nav>
             <div id="logo">
-                <img src="/client/public/assets/logo.png" alt="logo">
+                <img src="assets/logo.png" alt="logo">
                 <p>They killed the bird.</p>
             </div>
                 <div id="nav-options">
@@ -20,7 +23,7 @@
             </div>
         </nav>
 
-        <main id-="root">
+        <main id="root">
             <section class="hashtags-section">
                 <h2>Trending Hashtags</h2>
                 <ul>
@@ -44,6 +47,15 @@
                     <small>4 hours ago</small>
                 </article>
             </section>
+
+            <section class="messages">
+                <div id="message-box">
+                    <h2>Messages</h2>
+                    <div class="message">
+                    </div>
+
+                </div>
+            </section>
         </main>
         <footer>
             <p>&copy; Icarus - They killed the bird</p>
@@ -52,6 +64,7 @@
         <!-- Reactowy komponent -->
         <script type="text/babel">
             ReactDOM.render(<App />, document.getElementById('root'));
+            // Chciałem to zrobić w react'cie, ale prędzej się chyba zabije niż to zrobię
         </script>
     </body>
 </html>
