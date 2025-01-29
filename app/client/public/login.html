@@ -65,6 +65,13 @@
                 if (data.success) {
                     // Store username in localStorage after successful login
                     localStorage.setItem("username", username);
+
+                    // Generate Identicon URL
+                    const identiconUrl = `https://cdn.dicebear.com/6.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+
+                    // Store Identicon URL in localStorage
+                    localStorage.setItem("userProfilePicture", identiconUrl);
+
                     alert('Login successful');
                     window.location.href = "./pages/main.html"; // Redirect to the main page after login
                 } else {

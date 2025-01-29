@@ -1,7 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = localStorage.getItem("username");
     if (username) {
-        document.getElementById("greeting").textContent = `Welcome, ${username}!`;
+        const greetingElement = document.getElementById("greeting");
+        greetingElement.innerHTML = `<strong>Welcome, ${username}!</strong>`;
+
+        const profilePicture = document.createElement("img");
+        profilePicture.id = "profile-picture";
+        profilePicture.src = `https://api.dicebear.com/9.x/identicon/svg?seed=admin${encodeURIComponent(username)}`;
+        profilePicture.alt = "Profile Picture";
+        profilePicture.classList.add("profile-picture");
+
+        greetingElement.appendChild(profilePicture);
     }
     loadPosts();
 });
@@ -11,7 +20,6 @@ async function loadPosts() {
         const response = await fetch("http://localhost:3000/posts");
         if (!response.ok) throw new Error("Failed to load posts");
         const posts = await response.json();
-        console.log(posts); // Debugging
 
         const postContainer = document.querySelector(".posts-section");
         postContainer.innerHTML = ""; // Clear existing posts
@@ -21,8 +29,15 @@ async function loadPosts() {
         posts.forEach(post => {
             const postElement = document.createElement("div");
             postElement.classList.add("post");
+
+            // Create the Identicon URL
+            const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=admin${encodeURIComponent(post.user)}`;
+
             postElement.innerHTML = `
-                <h3>${post.user}</h3>
+                <h3>
+                    <img class="identicon" src="${identiconUrl}" alt="Identicon">
+                    <span class="username">${post.user}</span>
+                </h3>
                 <p>${post.content}</p>
                 <small>${post.timestamp}</small>
                 <p>#${post.hashtags.join(" #")}</p>

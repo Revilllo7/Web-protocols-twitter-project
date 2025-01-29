@@ -228,3 +228,27 @@
         color: red;
         text-overflow: unset;
     }
+
+    .post h3 {
+        display: flex;
+        align-items: center;
+    }
+    
+    .identicon {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    .username {
+        font-weight: bold;
+    }
+
+    .profile-picture {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        position: sticky;
+        left: 100%;
+    }
