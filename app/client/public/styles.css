@@ -85,11 +85,36 @@
         bottom: 0%;
     }
 
+    .panel {
+        display: grid;
+        grid-template-rows: auto auto auto;
+        gap: 1rem;
+        align-items: start;
+    }
+
+    greeting {
+        font-size: 1.5rem;
+    }
+
+    .post-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .post-text {
+        display: flex;
+        gap: 1rem;
+        height: 20vh;
+        background-color: red;
+    }
+
     /* Hashtags */
     .hashtags-section {
         flex: 1;
         font-size: 1.25rem;
-        max-width: 20rem;
+        max-width: max-content;
         background: #beb5a9;
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -109,7 +134,6 @@
         padding: 0.5rem 0;
         border-bottom: 1px solid #e5e7eb;
     }
-
     /* Posts */
     .posts-section {
         flex: 3;

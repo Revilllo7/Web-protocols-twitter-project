@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Twiiter</title>
+        <link rel="stylesheet" href="../styles.css">
+    </head>
+    <body>
+        <nav>
+            <div id="logo">
+                <img src="../assets/logo.png" alt="logo">
+                <p>They killed the bird.</p>
+            </div>
+                <div id="nav-options">
+                <a href="#">Profile</a>
+                <a href="main.html">Home</a>
+                <input type="text" placeholder="Search...">
+            </div>
+        </nav>
+
+        <main id="root">
+            <section id="panel">
+                <greeting id="greeting">
+                    <h1>Welcome [user name]!</h1>
+                </greeting>
+                <section class="post-section">
+                    <h2>Post</h2>
+                    <textarea id="post-text" placeholder="What's on your mind?"></textarea>
+                    <button onclick="post()">Post</button>
+                </section>    
+                <section class="hashtags-section">
+                    <h2>Trending Hashtags</h2>
+                    <ul>
+                        <li>#Placeholder1</li>
+                        <li>#Placeholder2</li>
+                        <li>#Placeholder3</li>
+                        <li>#Placeholder4</li>
+                        <li>#Placeholder5</li>
+                    </ul>
+                </section>
+            </section>
+
+            <section class="posts-section">
+                <article class="post">
+                    <h3>John Doe</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.</p>
+                    <small>2 hours ago</small>
+                </article>
+                <article class="post">
+                    <h3>Jane Smith</h3>
+                    <p>Curabitur tortor. Pellentesque nibh. Aenean quam. In scelerisque sem at dolor.</p>
+                    <small>4 hours ago</small>
+                </article>
+            </section>
+
+            <section class="messages">
+                <div id="message-box">
+                    <h2>Messages</h2>
+                    <div class="message">
+                    </div>
+
+                </div>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; Icarus - They killed the bird</p>
+            <a href="./pages/about_us.html">About us</a>
+            <a href="./pages/help.html">Help</a>
+            <a href="./pages/contact.html">Contact</a>            
+        </footer>
+
+    </body>
+</html>
