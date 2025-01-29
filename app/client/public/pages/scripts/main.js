@@ -42,7 +42,7 @@ async function loadPosts() {
                 <small>${post.timestamp}</small>
                 <p>#${post.hashtags.join(" #")}</p>
             `;
-            postContainer.appendChild(postElement);
+            postContainer.prepend(postElement); // Add new post to the top
 
             // Count hashtags for ranking
             post.hashtags.forEach(tag => {

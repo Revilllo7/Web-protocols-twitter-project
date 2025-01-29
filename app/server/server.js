@@ -81,9 +81,13 @@ const readPosts = async () => {
     }
 };
 
-// Get posts (for displaying them)
-app.get("/posts", async (req, res) => {
+// Get posts (for displaying them), sorted by timestamp (newest first)
+app.get("/posts", async (_, res) => {
     const posts = await readPosts();
+    
+    // Sort posts by timestamp in descending order
+    posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
     res.json(posts);
 });
 
@@ -102,11 +106,11 @@ app.post("/posts", async (req, res) => {
         user,
         content,
         hashtags,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().toISOString(), // Better for sorting and consistency
     };
 
-    // Add the new post to the posts array
-    posts.push(newPost);
+    // Add the new post to the beginning of the array
+    posts.unshift(newPost); // This ensures the newest post is at the top
 
     // Save the updated posts to the file
     await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
