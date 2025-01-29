@@ -12,10 +12,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         greetingElement.appendChild(profilePicture);
     }
-    loadPosts();
+    loadPosts(); // Load all posts initially
+
+    // Search functionality
+    const searchInput = document.getElementById("search-bar");
+    searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim();
+        loadPosts(null, query); // Reload posts based on search query
+    });
 });
 
-async function loadPosts(filteredTag = null) {
+async function loadPosts(filteredTag = null, searchQuery = "") {
     try {
         const response = await fetch("http://localhost:3000/posts");
         if (!response.ok) throw new Error("Failed to load posts");
@@ -24,8 +31,8 @@ async function loadPosts(filteredTag = null) {
         const postContainer = document.querySelector(".posts-section");
         postContainer.innerHTML = ""; // Clear existing posts
 
-        // Add "Show All Posts" button if filtering
-        if (filteredTag) {
+        // Add "Show All Posts" button if filtering by tag or search query
+        if (filteredTag || searchQuery) {
             const resetButton = document.createElement("button");
             resetButton.textContent = "Show All Posts";
             resetButton.classList.add("reset-button");
@@ -36,7 +43,11 @@ async function loadPosts(filteredTag = null) {
         const hashtagCounts = {};
 
         posts.forEach(post => {
-            if (filteredTag && !post.hashtags.includes(filteredTag)) return; // Filter posts
+            // Handle hashtag search query
+            const matchesHashtag = filteredTag ? post.hashtags.includes(filteredTag) : true;
+            const matchesSearch = searchQuery ? matchSearchQuery(post.content, searchQuery) : true;
+
+            if (!(matchesHashtag && matchesSearch)) return; // Filter out non-matching posts
 
             const postElement = document.createElement("div");
             postElement.classList.add("post");
@@ -66,7 +77,7 @@ async function loadPosts(filteredTag = null) {
         });
 
         // Only update top hashtags when loading all posts
-        if (!filteredTag) {
+        if (!filteredTag && !searchQuery) {
             displayTopHashtags(hashtagCounts);
         }
     } catch (error) {
@@ -74,11 +85,19 @@ async function loadPosts(filteredTag = null) {
     }
 }
 
+// Function to match search query in content, including hashtags
+function matchSearchQuery(content, query) {
+    // If the query starts with "#", treat it as a hashtag search
+    if (query.startsWith("#")) {
+        return content.toLowerCase().includes(query.toLowerCase());
+    }
+    // Otherwise, search for the string in the content
+    return content.toLowerCase().includes(query.toLowerCase());
+}
 
 function filterByHashtag(tag) {
     loadPosts(tag); // Reload posts filtered by the clicked hashtag
 }
-
 
 function displayTopHashtags(hashtagCounts) {
     const sortedHashtags = Object.entries(hashtagCounts)
@@ -101,7 +120,6 @@ function displayTopHashtags(hashtagCounts) {
         });
     });
 }
-
 
 async function addPost() {
     const username = localStorage.getItem("username");
@@ -135,7 +153,7 @@ async function addPost() {
         // Clear the input fields after posting
         document.getElementById("post-text").value = "";
         document.getElementById("hashtags").value = "";
-        loadPosts();
+        loadPosts(); // Reload all posts after posting
     } catch (error) {
         console.error("Error posting:", error);
         alert("Failed to post. Please try again.");
