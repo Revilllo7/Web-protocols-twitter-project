@@ -40,7 +40,11 @@ async function loadPosts() {
                 </h3>
                 <p>${post.content}</p>
                 <small>${post.timestamp}</small>
-                <p>#${post.hashtags.join(" #")}</p>
+                <p>
+                    ${post.hashtags.map(tag => 
+                        `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`
+                    ).join(" ")}
+                </p>
             `;
             postContainer.prepend(postElement); // Add new post to the top
 
@@ -56,19 +60,29 @@ async function loadPosts() {
     }
 }
 
+
 function displayTopHashtags(hashtagCounts) {
     const sortedHashtags = Object.entries(hashtagCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3);
+        .slice(0, 14);
 
     const hashtagList = document.getElementById("top-hashtags");
     hashtagList.innerHTML = "";
     sortedHashtags.forEach(([tag, count]) => {
         const listItem = document.createElement("li");
-        listItem.textContent = `#${tag} (${count})`;
+        listItem.innerHTML = `<button class="top-hashtag-button" data-hashtag="${tag}">#${tag} (${count})</button>`;
         hashtagList.appendChild(listItem);
     });
+
+    // Add click event to filter posts
+    document.querySelectorAll(".top-hashtag-button").forEach(button => {
+        button.addEventListener("click", () => {
+            const selectedHashtag = button.dataset.hashtag;
+            loadPosts(selectedHashtag);
+        });
+    });
 }
+
 
 async function addPost() {
     const username = localStorage.getItem("username");

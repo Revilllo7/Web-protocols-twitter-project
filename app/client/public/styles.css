@@ -256,3 +256,19 @@
         position: sticky;
         left: 100%;
     }
+
+    /* reseting the hashtag buttons */
+    .hashtag-button, .top-hashtag-button {
+        background: none;
+        border: none;
+        font-weight: bold;
+        color: inherit;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        font-size: inherit;
+    }
+
+    .hashtag-button:hover, .top-hashtag-button:hover {
+        text-decoration: underline;
+    }
