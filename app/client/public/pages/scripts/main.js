@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPosts();
 });
 
-async function loadPosts() {
+async function loadPosts(filteredTag = null) {
     try {
         const response = await fetch("http://localhost:3000/posts");
         if (!response.ok) throw new Error("Failed to load posts");
@@ -24,13 +24,24 @@ async function loadPosts() {
         const postContainer = document.querySelector(".posts-section");
         postContainer.innerHTML = ""; // Clear existing posts
 
+        // Add "Show All Posts" button if filtering
+        if (filteredTag) {
+            const resetButton = document.createElement("button");
+            resetButton.textContent = "Show All Posts";
+            resetButton.classList.add("reset-button");
+            resetButton.onclick = () => loadPosts(); // Reset posts
+            postContainer.appendChild(resetButton);
+        }
+
         const hashtagCounts = {};
 
         posts.forEach(post => {
+            if (filteredTag && !post.hashtags.includes(filteredTag)) return; // Filter posts
+
             const postElement = document.createElement("div");
             postElement.classList.add("post");
 
-            // Create the Identicon URL
+            // Identicon URL
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=admin${encodeURIComponent(post.user)}`;
 
             postElement.innerHTML = `
@@ -46,7 +57,7 @@ async function loadPosts() {
                     ).join(" ")}
                 </p>
             `;
-            postContainer.prepend(postElement); // Add new post to the top
+            postContainer.prepend(postElement);
 
             // Count hashtags for ranking
             post.hashtags.forEach(tag => {
@@ -54,10 +65,18 @@ async function loadPosts() {
             });
         });
 
-        displayTopHashtags(hashtagCounts);
+        // Only update top hashtags when loading all posts
+        if (!filteredTag) {
+            displayTopHashtags(hashtagCounts);
+        }
     } catch (error) {
         console.error("Error loading posts:", error);
     }
+}
+
+
+function filterByHashtag(tag) {
+    loadPosts(tag); // Reload posts filtered by the clicked hashtag
 }
 
 

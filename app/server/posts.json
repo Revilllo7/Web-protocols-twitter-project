@@ -165,5 +165,21 @@
       "dudeee"
     ],
     "timestamp": "1/29/2025, 7:21:57 PM"
+  },
+  {
+    "user": "admin",
+    "content": "Hello!! Now we can filter by hashtags! #NICE. Maybe one day we implement it in text, haha. We're worse than tumblr. Anyways, now if you filter by using a hashtag, a button appears to take you back to the normal state of things! Yippe!",
+    "hashtags": [
+      "#NewFeature"
+    ],
+    "timestamp": "1/29/2025, 7:41:32 PM"
+  },
+  {
+    "user": "ad",
+    "content": "my head looks like a nuclear mushroom cloud ;3",
+    "hashtags": [
+      ":3"
+    ],
+    "timestamp": "1/29/2025, 7:53:50 PM"
   }
 ]
