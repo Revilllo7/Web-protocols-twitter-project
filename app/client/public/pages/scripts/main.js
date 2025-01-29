@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const profilePicture = document.createElement("img");
         profilePicture.id = "profile-picture";
-        profilePicture.src = `https://api.dicebear.com/9.x/identicon/svg?seed=admin${encodeURIComponent(username)}`;
+        profilePicture.src = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(username)}`;
         profilePicture.alt = "Profile Picture";
         profilePicture.classList.add("profile-picture");
 
