@@ -1,28 +1,66 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs").promises;
+const bcrypt = require("bcrypt");
 
 const app = express();
 const PORT = 3000;
+const USERS_FILE = path.join(__dirname, "users.json");
 
 // Enable CORS
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors());
+
 
 // Middleware
 app.use(express.json());
 
-// Posts test
-let posts = [
-    { id: 1, title: "First Post", content: "This is the first post.", timeStamp: "4 hours" },
-    { id: 2, title: "Second Post", content: "This is the second post.", timeStamp: "3 hours" },
-];
+// Read users from file
+const readUsers = async () => {
+    try {
+        const data = await fs.readFile(USERS_FILE, "utf8");
+        return JSON.parse(data);
+    } catch (err) {
+        return [];
+    }
+};
 
-// Get all posts
-app.get("/api/posts", (_, res) => res.json(posts));
+// Write users to file
+const writeUsers = async (users) => {
+    await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+};
 
-// Serve index.html for the root route
-app.get("/", (_, res) => {
-    res.sendFile(path.join(__dirname, "../client/public/index.html"));
+// Register endpoint
+app.post("/register", async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ message: "Registration failed" });
+
+    const users = await readUsers();
+    const userExists = users.some(user => user.username === username); // Compare plaintext
+    if (userExists) return res.status(400).json({ message: "User already exists" });
+
+    users.push({ username, password }); // Store plaintext username, hashed password
+    await writeUsers(users);
+
+    res.json({ message: "User registered successfully" });
+});
+
+// Login endpoint
+app.post("/login", async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ message: "Login failed" });
+
+    const users = await readUsers();
+    const user = users.find(user => user.username === username); // Compare plaintext usernames
+    if (!user) {
+        return res.status(401).json({ success: false, message: "Invalid username" });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+        return res.status(401).json({ success: false, message: "Wrong password" });
+    }
+
+    res.json({ success: true, message: "Login successful" });
 });
 
 // Start the server
