@@ -7,13 +7,21 @@ const bcrypt = require("bcrypt");
 const app = express();
 const PORT = 3000;
 const USERS_FILE = path.join(__dirname, "users.json");
+const POSTS_FILE = path.join(__dirname, "posts.json");
 
-// Enable CORS
-app.use(cors());
+const corsOptions = {
+    origin: "http://localhost:5500", // Allow requests from the frontend (port 5500)
+    methods: ["GET", "POST"], // Allow GET and POST methods
+    allowedHeaders: ["Content-Type"], // Allow Content-Type header
+};
 
+app.use(cors(corsOptions)); // Apply CORS middleware with these options
 
 // Middleware
 app.use(express.json());
+
+// Serve static files
+app.use(express.static(path.join(__dirname, "client/public")));
 
 // Read users from file
 const readUsers = async () => {
@@ -61,6 +69,50 @@ app.post("/login", async (req, res) => {
     }
 
     res.json({ success: true, message: "Login successful" });
+});
+
+// Read posts from file
+const readPosts = async () => {
+    try {
+        const data = await fs.readFile(POSTS_FILE, "utf8");
+        return JSON.parse(data);
+    } catch (err) {
+        return [];
+    }
+};
+
+// Get posts (for displaying them)
+app.get("/posts", async (req, res) => {
+    const posts = await readPosts();
+    res.json(posts);
+});
+
+// POST endpoint to add new posts
+app.post("/posts", async (req, res) => {
+    const { user, content, hashtags } = req.body;
+    if (!user || !content) {
+        return res.status(400).json({ message: "User and content are required" });
+    }
+
+    // Get the current posts from the posts file
+    const posts = await readPosts();
+
+    // Create a new post with timestamp
+    const newPost = {
+        user,
+        content,
+        hashtags,
+        timestamp: new Date().toLocaleString(),
+    };
+
+    // Add the new post to the posts array
+    posts.push(newPost);
+
+    // Save the updated posts to the file
+    await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
+
+    // Send back a success response
+    res.status(201).json({ message: "Post added successfully" });
 });
 
 // Start the server
