@@ -3,10 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Twitter</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Contact Us - Icarus</title>
+    <link rel="stylesheet" href="pages.css"> 
 </head>
 <body>
-    <h1>Contact us</h1>
-    <p>For more information, call: 1-800-123-4567</p>
+    <header>
+        <nav>
+            <a href="../login.html">Login to home</a>
+            <a href="about_us.html">About Us</a>
+            <a href="help.html">Help</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="contact-us">
+            <h1>Contact Us</h1>
+            <p>Need to reach out? Whether you have a question, need support, or just want to say hi, we're here for you.</p>
+
+            <h2>Our Contact Details</h2>
+            <ul>
+                <li><strong>Email:</strong> miodexpp@gmail.com</li>
+                <li><strong>Phone:</strong> +48 not a chance</li>
+                <li><strong>Address:</strong> PL, Gdańsk</li>
+            </ul>
+
+            <h2>Send Us a Message</h2>
+            <form class="contact-form">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Your Name" required>
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Your Email" required>
+                
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" placeholder="Type your message here..." required></textarea>
+                
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Icarus. All Rights Reserved. (not really)</p>
+    </footer>
 </body>
 </html>

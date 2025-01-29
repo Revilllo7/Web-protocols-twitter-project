@@ -53,7 +53,7 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postElement.classList.add("post");
 
             // Identicon URL
-            const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=admin${encodeURIComponent(post.user)}`;
+            const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
 
             postElement.innerHTML = `
                 <h3>
