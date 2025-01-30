@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = getCookie("username");  // Read from cookies
+    const role = getCookie("role"); // Read user role from cookies
+    
     if (username) {
         const greetingElement = document.getElementById("greeting");
         greetingElement.innerHTML = `<strong>Welcome, ${username}!</strong>`;
@@ -26,7 +28,7 @@ function getCookie(name) {
 function setCookie(name, value, days = 7) {
     const expires = new Date();
     expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000)); // Set expiry date
-    document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}`;
+    document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}; Secure; SameSite=Lax`;
 }
 
 // Utility function to delete a cookie
@@ -44,6 +46,28 @@ function getCookie(name) {
         }
     }
     return null;
+}
+
+async function login(username, password) {
+    try {
+        const response = await fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            setCookie("username", username); // Store username in cookie
+            setCookie("role", result.role); // Store user role in cookie
+            loadPosts(); // Reload posts after successful login
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error("Error logging in:", error);
+        alert("Login failed. Please try again.");
+    }
 }
 
 async function addPost() {
@@ -100,6 +124,9 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
         const postContainer = document.querySelector(".posts-section");
         postContainer.innerHTML = ""; // Clear existing posts
 
+        const username = getCookie("username");
+        const isAdmin = getCookie("role") === "admin"; // Use role from cookies
+
         // Add "Show All Posts" button if filtering by tag or search query
         if (filteredTag || searchQuery) {
             const resetButton = document.createElement("button");
@@ -109,23 +136,10 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postContainer.appendChild(resetButton);
         }
 
-        // Count hashtags for displayTopHashtags function
-        const hashtagCounts = {};
         posts.forEach(post => {
-            post.hashtags.forEach(tag => {
-                hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
-            });
-
-            // Handle hashtag search query
-            const matchesHashtag = filteredTag ? post.hashtags.includes(filteredTag) : true;
-            const matchesSearch = searchQuery ? matchSearchQuery(post.content, searchQuery) : true;
-
-            if (!(matchesHashtag && matchesSearch)) return; // Filter out non-matching posts
-
             const postElement = document.createElement("div");
             postElement.classList.add("post");
 
-            // Identicon URL
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
 
             postElement.innerHTML = `
@@ -139,28 +153,22 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
                     ${post.hashtags.map(tag => 
                         `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`).join(" ")}
                 </p>
-                ${post.user === getCookie("username") ? 
+                ${post.user === username || isAdmin ? 
                     `<button onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
                     <button onclick="removePost('${post.id}')">Remove</button>` : ''}
             `;
             postContainer.appendChild(postElement);
         });
 
-        // Display top hashtags
-        displayTopHashtags(hashtagCounts);
-
     } catch (error) {
         console.error("Error loading posts:", error);
     }
 }
 
-// Function to match search query in content, including hashtags
 function matchSearchQuery(content, query) {
-    // If the query starts with "#", treat it as a hashtag search
     if (query.startsWith("#")) {
         return content.toLowerCase().includes(query.toLowerCase());
     }
-    // Otherwise, search for the string in the content
     return content.toLowerCase().includes(query.toLowerCase());
 }
 
@@ -181,7 +189,6 @@ function displayTopHashtags(hashtagCounts) {
         hashtagList.appendChild(listItem);
     });
 
-    // Add click event to filter posts
     document.querySelectorAll(".top-hashtag-button").forEach(button => {
         button.addEventListener("click", () => {
             const selectedHashtag = button.dataset.hashtag;
@@ -190,14 +197,28 @@ function displayTopHashtags(hashtagCounts) {
     });
 }
 
+// Modified `editPost` function to allow admin and owner editing
 async function editPost(post) {
+    const username = getCookie("username");
+    const role = getCookie("role"); // Assuming you store the role in a cookie after login
+
+    console.log("User Role:", role);
+    if (!role) {
+        alert("User role not detected. Please log in again.");
+        return;
+    }
+
+    if (role !== "admin" && post.user !== username) {
+        alert("You are not authorized to edit this post.");
+        return;
+    }
+
     const postTextElement = document.getElementById("post-text");
     postTextElement.value = post.content; // Use 'value' for textarea content
 
     const postButton = document.getElementById("post-button");
     postButton.textContent = "Save"; // Change the button text to "Save"
 
-    // Remove existing event listener before adding new one
     postButton.removeEventListener("click", handleSave);
     postButton.addEventListener("click", handleSave);
 
@@ -206,7 +227,6 @@ async function editPost(post) {
             const updatedContent = postTextElement.value.trim();
             if (updatedContent === post.content) return; // No change to save
 
-            // Ensure that the post ID is passed in the PUT request
             const response = await fetch(`http://localhost:3000/posts/${post.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -227,18 +247,50 @@ async function editPost(post) {
     }
 }
 
+// Modified `removePost` function to allow admin to delete any post
 async function removePost(postId) {
+    const username = getCookie("username");
+    const role = getCookie("role");
+
+    const post = await fetchPostById(postId);
+    if (!post) {
+        alert("Post not found.");
+        return;
+    }
+
+    console.log("Removing post:", postId, "User:", username, "Role:", role);
+
+    if (role !== "admin" && post.user !== username) {
+        alert("You are not authorized to delete this post.");
+        return;
+    }
+
     try {
+        console.log("Sending DELETE request...");
         const response = await fetch(`http://localhost:3000/posts/${postId}`, {
             method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, role })
         });
 
-        if (!response.ok) throw new Error("Failed to remove post");
+        console.log("Response received:", response);
+        if (!response.ok) {
+            const errorMessage = await response.json();
+            throw new Error(errorMessage.message || "Failed to delete post");
+        }
 
-        loadPosts(); // Reload posts after removing
+        loadPosts(); // Reload posts after deletion
     } catch (error) {
         console.error("Error removing post:", error);
-        alert("Failed to remove post. Please try again.");
+        alert("Failed to delete post. Please try again.");
     }
 }
 
+// Fetch a post by ID
+async function fetchPostById(postId) {
+    const response = await fetch(`http://localhost:3000/posts/${postId}`);
+    if (response.ok) {
+        return response.json();
+    }
+    return null;
+}

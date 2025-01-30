@@ -23,7 +23,6 @@
     <a class="link" href="./pages/help.html">Problem logging in? Go to help!</a>
 
     <script>
-        // Utility functions to handle cookies
         function setCookie(name, value, days) {
             const expires = new Date(Date.now() + days * 864e5).toUTCString();
             document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
@@ -37,29 +36,33 @@
             }, '');
         }
 
-        // Registration function
         async function register() {
-            const username = document.getElementById('register-username').value;
-            const password = document.getElementById('register-password').value;
+            const username = document.getElementById("register-username").value;
+            const password = document.getElementById("register-password").value;
 
-            if (!username || !password) {
-                alert('Please fill in all fields.');
-                return;
+            try {
+                const response = await fetch("http://localhost:3000/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ username, password }),  // Don't pass role from frontend
+                });
+
+                const data = await response.json();
+                console.log("Server response:", data);
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Registration failed");
+                }
+
+                alert("Registered successfully! Role: " + data.role);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Error registering: " + error.message);
             }
-
-            const hashedPassword = await dcodeIO.bcrypt.hash(password, 10); // FIXED
-
-            fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password: hashedPassword })
-            })
-            .then(response => response.json())
-            .then(data => alert(data.message))
-            .catch(error => console.error('Error:', error));
         }
 
-        // Login function
         async function login() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
@@ -77,23 +80,24 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Set cookies after successful login
-                    setCookie("username", username, 7); // Set the username cookie for 7 days
-
-                    // Generate Identicon URL
+                    setCookie("username", username, 7);
+                    
+                    if (data.role) {
+                        setCookie("role", data.role, 7); // Store user role
+                    }
+                    
                     const identiconUrl = `https://cdn.dicebear.com/6.x/identicon/svg?seed=${encodeURIComponent(username)}`;
-
-                    // Set Identicon URL in a cookie
                     setCookie("userProfilePicture", identiconUrl, 7);
-
+                    
                     alert('Login successful');
-                    window.location.href = "./pages/main.html"; // Redirect to the main page after login
+                    window.location.href = "./pages/main.html";
                 } else {
-                    alert(data.message);
+                    alert(data.message); // Show the error message (e.g. "Invalid username")
                 }
             })
             .catch(error => console.error('Error:', error));
         }
+
     </script>
 </body>
 </html>
