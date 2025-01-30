@@ -72,8 +72,8 @@
         flex: 1;
         gap: 1rem;
         padding: 1rem;
-        height: calc(100vh - 4rem); /* Adjust for nav/footer */
-        overflow: hidden; /* Prevents unnecessary scrolling */
+        height: calc(100vh - 4rem);
+        overflow: hidden;
     }
 
     /* Footer */
@@ -309,8 +309,8 @@
     }
 
     .admin-emblem {
-        background-color: red;
-        color: white;
+        background-color: rgb(160, 9, 9);
+        color: #f3f4f6;
         font-size: 12px;
         padding: 2px 6px;
         margin-left: 8px;
@@ -319,3 +319,135 @@
         position: relative;
         bottom: 0.25rem;   
     }
+
+    /* Container for Room Buttons (Centered) */
+#message-box > div {
+    padding-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem; 
+    margin-bottom: 1rem;
+    flex-wrap: wrap; 
+}
+
+/* Room Buttons */
+.room-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #291c0e;
+    color: #f3f4f6;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.room-button:hover {
+    background-color: #6e473b51;
+    transform: scale(1.05); /* Slight scale on hover */
+}
+
+.room-button:focus {
+    outline: none;
+    background-color: #bc611c;
+}
+
+.room-button:active {
+    background-color: rgb(160, 9, 9);
+}
+
+/* Message Input */
+#message-input {
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid #291c0e;
+    font-size: 1.25rem;
+    width: 100%;
+    height: 6rem;
+    background-color: #f3f4f6;
+    color: #333;
+    resize: none; /* Prevent resizing */
+    transition: border-color 0.3s, background-color 0.3s;
+}
+
+#message-input:focus {
+    outline: none;
+    border-color: #6e473b;
+    background-color: #ffffff;
+}
+
+/* Send Message Button */
+#send-message-button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    border: none;
+    background-color: #291c0e;
+    color: #f3f4f6;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    position: relative;
+    left: 30%;
+}
+
+#send-message-button:hover {
+    background-color: #6e473b51;
+    transform: scale(1.05); /* Slight scale on hover */
+}
+
+#send-message-button:focus {
+    outline: none;
+    background-color: #bc611c;
+}
+
+#send-message-button:active {
+    background-color: rgb(160, 9, 9);
+}
+
+.edit-button, .remove-button {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.edit-button {
+    background-color: #e5e7eb; /* Green */
+    color: #000;
+}
+
+.edit-button:hover {
+    background-color: #6e473b51;
+
+}
+
+.edit-button:active {
+    transform: scale(0.95);
+}
+
+.remove-button {
+    background-color: #e5e7eb; /* Red */
+    color: #000;
+}
+
+.remove-button:hover {
+    background-color: #d32f2f;
+}
+
+.remove-button:active {
+    transform: scale(0.95);
+}
+
+.panel input {
+    display: flex;
+    justify-content: center;
+    gap: 1rem; 
+    flex-wrap: wrap; 
+    font-size: 1rem;
+}

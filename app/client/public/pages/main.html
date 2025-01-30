@@ -24,7 +24,7 @@
             <div class="panel">
                 <div id="greeting">  
                 </div>
-                    <!-- JS welcome $username message here -->
+                <!-- JS welcome $username message here -->
                 
                 <div class="post-section">
                     <textarea id="post-text" placeholder="What's on your mind?"></textarea>
@@ -42,11 +42,37 @@
                 <!-- Posts will be dynamically inserted here -->
             </section>
 
+            <!-- Messages Section with Rooms -->
             <section class="messages">
                 <div id="message-box">
                     <h2>Messages</h2>
-                    <div class="message">
+
+                    <!-- Room buttons -->
+                    <div>
+                        <button class="room-button" data-room="room1">Room 1</button>
+                        <button class="room-button" data-room="room2">Room 2</button>
+                        <button class="room-button" data-room="room3">Room 3</button>
+                        <button class="room-button" data-room="room4">Room 4</button>
                     </div>
+
+                    <!-- Message input -->
+                    <input type="text" id="message-input" placeholder="Type a message">
+                    <button id="send-message-button" onclick="sendMessage()">Send</button>
+
+                    <!-- Rooms -->
+                    <div id="room-1" class="message-container" style="display:block;">
+                        <div class="message-list" style="height: 300px; overflow-y: scroll;"></div>
+                    </div>
+                    <div id="room-2" class="message-container" style="display:none;">
+                        <div class="message-list" style="height: 300px; overflow-y: scroll;"></div>
+                    </div>
+                    <div id="room-3" class="message-container" style="display:none;">
+                        <div class="message-list" style="height: 300px; overflow-y: scroll;"></div>
+                    </div>
+                    <div id="room-4" class="message-container" style="display:none;">
+                        <div class="message-list" style="height: 300px; overflow-y: scroll;"></div>
+                    </div>
+                    
                 </div>
             </section>
         </main>
@@ -63,5 +89,41 @@
         </footer>
         
         <script src="./scripts/main.js"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+            // JavaScript for Room Switching
+            const roomButtons = document.querySelectorAll(".room-button");
+        
+            // Function to switch rooms
+            function switchRoom(roomId) {
+                // Hide all rooms
+                const rooms = document.querySelectorAll(".message-container");
+                rooms.forEach(room => room.style.display = "none");
+        
+                // Remove 'active-room' class from all rooms
+                rooms.forEach(room => room.classList.remove("active-room"));
+        
+                // Correctly select the room by its ID
+                const newRoom = document.getElementById(`room-${roomId}`); // Room should have room-ID (e.g., room-1)
+        
+                if (newRoom) {  // Check if the room element exists
+                newRoom.style.display = "block";  // Show the room
+                newRoom.classList.add("active-room");  // Add active class to the room
+                } else {
+                console.error(`Room with id 'room-${roomId}' not found.`);
+                }
+            }
+        
+            // Add event listeners for each room button
+            roomButtons.forEach(button => {
+                button.addEventListener("click", () => {
+                let roomId = button.getAttribute("data-room");  // Get the room ID directly (room1, room2, room3, room4)
+                roomId = roomId.replace('room', ''); // Extract the number from the room ID
+                switchRoom(roomId);  // Pass the roomId directly to switchRoom
+                });
+            });
+            });
+        </script>
     </body>
 </html>

@@ -4,11 +4,13 @@ const path = require("path");
 const fs = require("fs").promises;
 const bcrypt = require("bcrypt");
 const uuidv4 = require("uuid").v4;
+const WebSocket = require("ws");
 
 const app = express();
 const PORT = 3000;
 const USERS_FILE = path.join(__dirname, "users.json");
 const POSTS_FILE = path.join(__dirname, "posts.json");
+const ROOMS_FILE = path.join(__dirname, "rooms.json");  // Added rooms.json for saving messages
 
 const corsOptions = {
     origin: "http://localhost:5500", // Allow requests from the frontend (port 5500)
@@ -21,7 +23,7 @@ app.use(cors(corsOptions)); // Apply CORS middleware with these options
 // Middleware
 app.use(express.json());
 
-// Check if the users.json file exists, if not, create it
+// Check if the users.json and rooms.json files exist, if not, create them
 const fileExists = async (filePath) => {
     try {
         await fs.access(filePath); // Check if the file exists
@@ -37,6 +39,9 @@ const initFiles = async () => {
     }
     if (!await fileExists(POSTS_FILE)) {
         await fs.writeFile(POSTS_FILE, "[]"); // Create an empty JSON array if missing
+    }
+    if (!await fileExists(ROOMS_FILE)) {
+        await fs.writeFile(ROOMS_FILE, "{}"); // Create an empty object if missing
     }
 };
 
@@ -73,13 +78,32 @@ async function writePosts(posts) {
 }
 
 // Function to read posts from the posts.json file
-// Function to read posts from the posts.json file
 async function readPosts() {
     try {
         const data = await fs.readFile(POSTS_FILE, 'utf8');
         return JSON.parse(data);
     } catch (err) {
         console.error("Error reading posts file:", err);
+        throw err;
+    }
+}
+
+// Function to read messages from rooms.json
+async function readRooms() {
+    try {
+        const data = await fs.readFile(ROOMS_FILE, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        return {};  // Return empty object if no rooms are found
+    }
+}
+
+// Function to write messages to rooms.json
+async function writeRooms(rooms) {
+    try {
+        await fs.writeFile(ROOMS_FILE, JSON.stringify(rooms, null, 2));
+    } catch (err) {
+        console.error("Error writing to rooms file:", err);
         throw err;
     }
 }
@@ -139,7 +163,65 @@ app.post("/login", async (req, res) => {
     res.json({ success: true, message: "Login successful", role: user.role });
 });
 
+// WebSocket server
+const wss = new WebSocket.Server({ port: 3001 });
 
+
+// WebSocket connection handling
+wss.on("connection", (ws) => {
+    console.log('New client connected');
+
+    ws.on('message', async (message) => {
+        try {
+            const parsedMessage = JSON.parse(message);
+            const { room, message: msg } = parsedMessage;
+
+            console.log(`Received message: ${msg} in room: ${room}`);
+
+            // Read the current rooms data
+            const rooms = await readRooms();
+
+            // Add the message to the appropriate room
+            if (!rooms[room]) {
+                rooms[room] = [];
+            }
+            rooms[room].push(msg);
+
+            // Save the updated rooms data
+            await writeRooms(rooms);
+
+            // Broadcast the message to all clients
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ room, message: msg }));
+                }
+            });
+        } catch (e) {
+            console.error('Error parsing message:', e);
+        }
+    });
+
+    ws.on('close', () => {
+        console.log('User disconnected from WebSocket.');
+    });
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+    });
+});
+
+console.log('WebSocket server is running on ws://localhost:3000');
+
+// WebSocket upgrade handling for HTTP server
+const server = app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
+server.on("upgrade", (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit("connection", ws, request);
+    });
+});
 
 // GET /posts - Fetch all posts
 app.get("/posts", async (req, res) => {
@@ -241,9 +323,6 @@ app.delete("/posts/:id", async (req, res) => {
     }
 });
 
+
 // Serve static files
 app.use(express.static(path.join(__dirname, "client/public")));
-
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});

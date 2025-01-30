@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
             greetingElement.appendChild(adminEmblem);
         }
 
-
         const profilePicture = document.createElement("img");
         profilePicture.id = "profile-picture";
         profilePicture.src = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(username)}`;
@@ -25,13 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     loadPosts(); // Load all posts initially
 });
-
-// Utility function to get a cookie by name
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-}
 
 // Utility function to set a cookie
 function setCookie(name, value, days = 7) {
@@ -184,10 +176,11 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
                     ${post.hashtags.map(tag => 
                         `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`).join(" ")}
                 </p>
-                ${post.user === username || isAdmin ? 
-                    `<button onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
-                    <button onclick="removePost('${post.id}')">Remove</button>` : ''}
-            `;
+                    ${post.user === username || isAdmin ? 
+                        `<button class="edit-button" onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
+                        <button class="remove-button" onclick="removePost('${post.id}')">Remove</button>` 
+                    : ''}
+                `;
             postContainer.appendChild(postElement);
         });
 
@@ -204,7 +197,6 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
         console.error("Error loading posts:", error);
     }
 }
-
 
 function matchSearchQuery(content, query) {
     if (query.startsWith("#")) {
@@ -335,3 +327,42 @@ async function fetchPostById(postId) {
     }
     return null;
 }
+
+// Establish WebSocket connection to the server
+// Establish WebSocket connection to the server
+const socket = new WebSocket("ws://localhost:3001");
+
+// Function to handle message sending in a room
+function sendMessage() {
+    const messageInput = document.getElementById("message-input");
+    const message = messageInput.value.trim();
+    const activeRoom = document.querySelector(".message-container.active-room").id;
+
+    if (!message) {
+        alert("Message cannot be empty.");
+        return;
+    }
+
+    const room = activeRoom.replace("room-", ""); // Extract room number from the ID
+
+    socket.send(JSON.stringify({ room, message }));
+
+    // Clear the input field after sending the message
+    messageInput.value = "";
+}
+
+// A simple function to display messages in the respective room
+function displayMessage(room, message) {
+    const roomDiv = document.querySelector(`#room-${room} .message-list`);
+    const messageElement = document.createElement("div");
+    messageElement.textContent = message;
+    roomDiv.appendChild(messageElement);
+    roomDiv.scrollTop = roomDiv.scrollHeight;  // Auto-scroll to the latest message
+}
+
+// Handle incoming WebSocket messages
+socket.addEventListener("message", (event) => {
+    const data = JSON.parse(event.data);
+    displayMessage(data.room, data.message);
+});
+
