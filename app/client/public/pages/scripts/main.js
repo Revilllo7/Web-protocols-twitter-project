@@ -40,8 +40,6 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postContainer.appendChild(resetButton);
         }
 
-        const hashtagCounts = {};
-
         posts.forEach(post => {
             // Handle hashtag search query
             const matchesHashtag = filteredTag ? post.hashtags.includes(filteredTag) : true;
@@ -56,30 +54,22 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
 
             postElement.innerHTML = `
-                <h3>
-                    <img class="identicon" src="${identiconUrl}" alt="Identicon">
-                    <span class="username">${post.user}</span>
-                </h3>
-                <p>${post.content}</p>
-                <small>${post.timestamp}</small>
-                <p>
-                    ${post.hashtags.map(tag => 
-                        `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`
-                    ).join(" ")}
-                </p>
-            `;
+    <h3>
+        <img class="identicon" src="${identiconUrl}" alt="Identicon">
+        <span class="username">${post.user}</span>
+    </h3>
+    <p>${post.content}</p>
+    <small>${post.timestamp}</small>
+    <p>
+        ${post.hashtags.map(tag => 
+            `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`).join(" ")}
+    </p>
+    ${post.user === localStorage.getItem("username") ? 
+        `<button onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
+        <button onclick="removePost('${post.id}')">Remove</button>` : ''}
+`;
             postContainer.prepend(postElement);
-
-            // Count hashtags for ranking
-            post.hashtags.forEach(tag => {
-                hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
-            });
         });
-
-        // Only update top hashtags when loading all posts
-        if (!filteredTag && !searchQuery) {
-            displayTopHashtags(hashtagCounts);
-        }
     } catch (error) {
         console.error("Error loading posts:", error);
     }
@@ -163,5 +153,57 @@ async function addPost() {
     } catch (error) {
         console.error("Error posting:", error);
         alert("Failed to post. Please try again.");
+    }
+}
+
+async function editPost(post) {
+    const postTextElement = document.getElementById("post-text");
+    postTextElement.value = post.content; // Use 'value' for textarea content
+
+    const postButton = document.getElementById("post-button");
+    postButton.textContent = "Save"; // Change the button text to "Save"
+
+    // Remove existing event listener before adding new one
+    postButton.removeEventListener("click", handleSave);
+    postButton.addEventListener("click", handleSave);
+
+    async function handleSave() {
+        try {
+            const updatedContent = postTextElement.value.trim();
+            if (updatedContent === post.content) return; // No change to save
+
+            // Ensure that the post ID is passed in the PUT request
+            const response = await fetch(`http://localhost:3000/posts/${post.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: updatedContent,
+                    edited: true,
+                    timestamp: new Date().toISOString(),
+                })
+            });
+
+            if (!response.ok) throw new Error("Failed to edit post");
+
+            loadPosts(); // Reload posts after editing
+        } catch (error) {
+            console.error("Error editing post:", error);
+            alert("Failed to edit post. Please try again.");
+        }
+    }
+}
+
+async function removePost(postId) {
+    try {
+        const response = await fetch(`http://localhost:3000/posts/${postId}`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) throw new Error("Failed to remove post");
+
+        loadPosts(); // Reload posts after removing
+    } catch (error) {
+        console.error("Error removing post:", error);
+        alert("Failed to remove post. Please try again.");
     }
 }

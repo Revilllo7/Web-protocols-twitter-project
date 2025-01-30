@@ -21,8 +21,6 @@ app.use(cors(corsOptions)); // Apply CORS middleware with these options
 // Middleware
 app.use(express.json());
 
-// Serve static files
-app.use(express.static(path.join(__dirname, "client/public")));
 
 // Read users from file
 const readUsers = async () => {
@@ -103,30 +101,43 @@ app.post("/posts", async (req, res) => {
     const posts = await readPosts();
 
     // Generate a new unique post ID
-    let newPostId;
-    do {
-        newPostId = uuidv4();
-    } while (posts.some(post => post.id === newPostId));
-
-    // Create a new post with timestamp
-    const newPost = {
-        id: newPostId,
+    let newPost = {
+        id: uuidv4(),
         user,
         content,
         hashtags,
         timestamp: new Date().toISOString(),
-        edited: false,
+        edited: false
     };
 
-    // Add the new post to the beginning of the array
-    posts.unshift(newPost); // This ensures the newest post is at the top
+    posts.push(newPost);
 
-    // Save the updated posts to the file
+    // Write the updated posts to the file
     await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
 
-    // Send back a success response
-    res.status(201).json({ message: "Post added successfully" });
+    res.status(201).json(newPost);
 });
 
-// Start the server
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// PUT endpoint to update an existing post
+
+// DELETE endpoint to remove a post
+app.delete("/posts/:id", async (req, res) => {
+    const postId = req.params.id;
+    const posts = await readPosts();
+
+    const updatedPosts = posts.filter(post => post.id !== postId);
+    if (posts.length === updatedPosts.length) {
+        return res.status(404).json({ message: "Post not found" });
+    }
+
+    await fs.writeFile(POSTS_FILE, JSON.stringify(updatedPosts, null, 2));
+
+    res.status(200).json({ message: "Post deleted successfully" });
+});
+
+// Serve static files
+app.use(express.static(path.join(__dirname, "client/public")));
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
