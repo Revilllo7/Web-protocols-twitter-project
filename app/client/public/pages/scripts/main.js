@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const username = localStorage.getItem("username");
+    const username = getCookie("username");  // Read from cookies
     if (username) {
         const greetingElement = document.getElementById("greeting");
         greetingElement.innerHTML = `<strong>Welcome, ${username}!</strong>`;
@@ -14,6 +14,82 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     loadPosts(); // Load all posts initially
 });
+
+// Utility function to get a cookie by name
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// Utility function to set a cookie
+function setCookie(name, value, days = 7) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000)); // Set expiry date
+    document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}`;
+}
+
+// Utility function to delete a cookie
+function deleteCookie(name) {
+    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`; // Set expiry date to past
+}
+
+// Helper functions for cookies
+function getCookie(name) {
+    const cookieArr = document.cookie.split("; ");
+    for (let i = 0; i < cookieArr.length; i++) {
+        const cookiePair = cookieArr[i].split("=");
+        if (cookiePair[0] === name) {
+            return decodeURIComponent(cookiePair[1]);
+        }
+    }
+    return null;
+}
+
+async function addPost() {
+    const username = getCookie("username");  // Read from cookies
+    const content = document.getElementById("post-text").value.trim();
+    const hashtags = document.getElementById("hashtags").value.split(",").map(h => h.trim()).filter(Boolean);
+
+    // Check if username exists
+    if (!username) {
+        alert("You must be logged in to post.");
+        return;
+    }
+
+    // Check if content is not empty
+    if (!content) {
+        alert("Post cannot be empty.");
+        return;
+    }
+
+    // Log the request body for debugging
+    console.log("Request Body:", { user: username, content, hashtags });
+
+    try {
+        const response = await fetch("http://localhost:3000/posts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user: username,
+                content,
+                hashtags,
+                timestamp: new Date().toISOString(),
+                edited: false
+            })
+        });
+
+        if (!response.ok) throw new Error("Failed to post");
+
+        // Clear the input fields after posting
+        document.getElementById("post-text").value = "";
+        document.getElementById("hashtags").value = "";
+        loadPosts(); // Reload all posts after posting
+    } catch (error) {
+        console.error("Error posting:", error);
+        alert("Failed to post. Please try again.");
+    }
+}
 
 async function loadPosts(filteredTag = null, searchQuery = "") {
     try {
@@ -53,20 +129,20 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
 
             postElement.innerHTML = `
-    <h3>
-        <img class="identicon" src="${identiconUrl}" alt="Identicon">
-        <span class="username">${post.user}</span>
-    </h3>
-    <p>${post.content}</p>
-    <small>${post.timestamp}</small>
-    <p>
-        ${post.hashtags.map(tag => 
-            `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`).join(" ")}
-    </p>
-    ${post.user === localStorage.getItem("username") ? 
-        `<button onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
-        <button onclick="removePost('${post.id}')">Remove</button>` : ''}
-`;
+                <h3>
+                    <img class="identicon" src="${identiconUrl}" alt="Identicon">
+                    <span class="username">${post.user}</span>
+                </h3>
+                <p>${post.content}</p>
+                <small>${post.timestamp}</small>
+                <p>
+                    ${post.hashtags.map(tag => 
+                        `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`).join(" ")}
+                </p>
+                ${post.user === getCookie("username") ? 
+                    `<button onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
+                    <button onclick="removePost('${post.id}')">Remove</button>` : ''}
+            `;
             postContainer.appendChild(postElement);
         });
 
@@ -112,51 +188,6 @@ function displayTopHashtags(hashtagCounts) {
             loadPosts(selectedHashtag);
         });
     });
-}
-
-async function addPost() {
-    const username = localStorage.getItem("username");
-    const content = document.getElementById("post-text").value.trim();
-    const hashtags = document.getElementById("hashtags").value.split(",").map(h => h.trim()).filter(Boolean);
-
-    // Check if username exists
-    if (!username) {
-        alert("You must be logged in to post.");
-        return;
-    }
-
-    // Check if content is not empty
-    if (!content) {
-        alert("Post cannot be empty.");
-        return;
-    }
-
-    // Log the request body for debugging
-    console.log("Request Body:", { user: username, content, hashtags });
-
-    try {
-        const response = await fetch("http://localhost:3000/posts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                user: username,
-                content,
-                hashtags,
-                timestamp: new Date().toISOString(),
-                edited: false
-            })
-        });
-
-        if (!response.ok) throw new Error("Failed to post");
-
-        // Clear the input fields after posting
-        document.getElementById("post-text").value = "";
-        document.getElementById("hashtags").value = "";
-        loadPosts(); // Reload all posts after posting
-    } catch (error) {
-        console.error("Error posting:", error);
-        alert("Failed to post. Please try again.");
-    }
 }
 
 async function editPost(post) {
@@ -210,3 +241,4 @@ async function removePost(postId) {
         alert("Failed to remove post. Please try again.");
     }
 }
+

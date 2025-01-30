@@ -23,6 +23,20 @@
     <a class="link" href="./pages/help.html">Problem logging in? Go to help!</a>
 
     <script>
+        // Utility functions to handle cookies
+        function setCookie(name, value, days) {
+            const expires = new Date(Date.now() + days * 864e5).toUTCString();
+            document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+        }
+
+        function getCookie(name) {
+            return document.cookie.split('; ').reduce((r, v) => {
+                const parts = v.split('=');
+                if (parts[0] === name) r = decodeURIComponent(parts[1]);
+                return r;
+            }, '');
+        }
+
         // Registration function
         async function register() {
             const username = document.getElementById('register-username').value;
@@ -63,14 +77,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Store username in localStorage after successful login
-                    localStorage.setItem("username", username);
+                    // Set cookies after successful login
+                    setCookie("username", username, 7); // Set the username cookie for 7 days
 
                     // Generate Identicon URL
                     const identiconUrl = `https://cdn.dicebear.com/6.x/identicon/svg?seed=${encodeURIComponent(username)}`;
 
-                    // Store Identicon URL in localStorage
-                    localStorage.setItem("userProfilePicture", identiconUrl);
+                    // Set Identicon URL in a cookie
+                    setCookie("userProfilePicture", identiconUrl, 7);
 
                     alert('Login successful');
                     window.location.href = "./pages/main.html"; // Redirect to the main page after login

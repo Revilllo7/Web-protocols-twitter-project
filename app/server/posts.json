@@ -36,5 +36,23 @@
     "hashtags": [],
     "timestamp": "2025-01-30T17:33:40.398Z",
     "edited": false
+  },
+  {
+    "id": "b6bf110e-0335-4ff6-8450-a2a1537a225f",
+    "user": "admin",
+    "content": "now we're using cookies!",
+    "hashtags": [
+      "hell yea"
+    ],
+    "timestamp": "2025-01-30T17:57:03.929Z",
+    "edited": false
+  },
+  {
+    "id": "d8ad3d54-acf0-4154-b817-d0b4096aab65",
+    "user": "oliver",
+    "content": "damn, we have cookies fr?",
+    "hashtags": [],
+    "timestamp": "2025-01-30T18:02:08.588Z",
+    "edited": false
   }
 ]
