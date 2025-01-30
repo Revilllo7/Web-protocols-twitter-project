@@ -145,7 +145,13 @@ async function addPost() {
         const response = await fetch("http://localhost:3000/posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ user: username, content, hashtags })
+            body: JSON.stringify({
+                user: username,
+                content,
+                hashtags,
+                timestamp: new Date().toISOString(),
+                edited: false
+            })
         });
 
         if (!response.ok) throw new Error("Failed to post");

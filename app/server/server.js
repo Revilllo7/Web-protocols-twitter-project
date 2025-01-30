@@ -3,6 +3,7 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs").promises;
 const bcrypt = require("bcrypt");
+const uuidv4 = require("uuid").v4;
 
 const app = express();
 const PORT = 3000;
@@ -11,7 +12,7 @@ const POSTS_FILE = path.join(__dirname, "posts.json");
 
 const corsOptions = {
     origin: "http://localhost:5500", // Allow requests from the frontend (port 5500)
-    methods: ["GET", "POST"], // Allow GET and POST methods
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
     allowedHeaders: ["Content-Type"], // Allow Content-Type header
 };
 
@@ -101,12 +102,20 @@ app.post("/posts", async (req, res) => {
     // Get the current posts from the posts file
     const posts = await readPosts();
 
+    // Generate a new unique post ID
+    let newPostId;
+    do {
+        newPostId = uuidv4();
+    } while (posts.some(post => post.id === newPostId));
+
     // Create a new post with timestamp
     const newPost = {
+        id: newPostId,
         user,
         content,
         hashtags,
-        timestamp: new Date().toISOString(), // Better for sorting and consistency
+        timestamp: new Date().toISOString(),
+        edited: false,
     };
 
     // Add the new post to the beginning of the array
