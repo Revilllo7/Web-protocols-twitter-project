@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "75d1d4c9-db1d-4236-b0f5-d84ebe68e010",
+    "user": "test",
+    "content": "test",
+    "hashtags": [
+      "test"
+    ],
+    "timestamp": "2025-01-30T17:28:34.088Z",
+    "edited": false
+  },
+  {
+    "id": "08442a56-9f08-41c1-af41-59bdf0d7de0e",
+    "user": "test",
+    "content": "brzoskiewieni",
+    "hashtags": [],
+    "timestamp": "2025-01-30T17:29:04.408Z",
+    "edited": false
+  },
+  {
+    "id": "c26f59f7-b8eb-4cc9-bf43-c7515f2fa3c9",
+    "user": "test",
+    "content": "więcej hashów",
+    "hashtags": [
+      "tag",
+      "yippe",
+      "test"
+    ],
+    "timestamp": "2025-01-30T17:31:40.718Z",
+    "edited": false
+  },
+  {
+    "id": "82edac2d-1012-499e-b2f5-be76c3270c59",
+    "user": "test",
+    "content": "we",
+    "hashtags": [],
+    "timestamp": "2025-01-30T17:33:40.398Z",
+    "edited": false
+  }
+]
