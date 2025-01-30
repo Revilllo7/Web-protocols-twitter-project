@@ -42,9 +42,6 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
 
         const hashtagCounts = {};
 
-        // Order posts from oldest to newest (ascending order of timestamp)
-        posts.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
         posts.forEach(post => {
             // Handle hashtag search query
             const matchesHashtag = filteredTag ? post.hashtags.includes(filteredTag) : true;
@@ -67,7 +64,7 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
                 <small>${post.timestamp}</small>
                 <p>
                     ${post.hashtags.map(tag => 
-                        `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>` 
+                        `<button class="hashtag-button" onclick="filterByHashtag('${tag}')">#${tag}</button>`
                     ).join(" ")}
                 </p>
             `;
