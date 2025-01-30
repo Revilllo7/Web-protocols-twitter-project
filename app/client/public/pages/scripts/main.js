@@ -6,6 +6,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const greetingElement = document.getElementById("greeting");
         greetingElement.innerHTML = `<strong>Welcome, ${username}!</strong>`;
 
+        // Check if the logged-in user is admin
+        if (username === "admin") {
+            const adminEmblem = document.createElement("span");
+            adminEmblem.classList.add("admin-emblem");
+            adminEmblem.textContent = "Admin";
+            greetingElement.appendChild(adminEmblem);
+        }
+
+
         const profilePicture = document.createElement("img");
         profilePicture.id = "profile-picture";
         profilePicture.src = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(username)}`;
@@ -136,17 +145,39 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postContainer.appendChild(resetButton);
         }
 
-        posts.forEach(post => {
+        // Filter posts based on the selected hashtag (filteredTag)
+        const filteredPosts = filteredTag ? posts.filter(post => post.hashtags.includes(filteredTag)) : posts;
+
+        filteredPosts.forEach(post => {
             const postElement = document.createElement("div");
             postElement.classList.add("post");
-
+        
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
-
+        
+            // Create the post header
+            const postHeader = document.createElement("h3");
+            const identiconImg = document.createElement("img");
+            identiconImg.classList.add("identicon");
+            identiconImg.src = identiconUrl;
+            identiconImg.alt = "Identicon";
+            
+            const usernameSpan = document.createElement("span");
+            usernameSpan.classList.add("username");
+            usernameSpan.textContent = post.user;
+        
+            // Add admin emblem if the post author is admin
+            if (post.user === "admin") {
+                const adminEmblem = document.createElement("span");
+                adminEmblem.classList.add("admin-emblem");
+                adminEmblem.textContent = "Admin";
+                usernameSpan.appendChild(adminEmblem);
+            }
+        
+            postHeader.appendChild(identiconImg);
+            postHeader.appendChild(usernameSpan);
+        
             postElement.innerHTML = `
-                <h3>
-                    <img class="identicon" src="${identiconUrl}" alt="Identicon">
-                    <span class="username">${post.user}</span>
-                </h3>
+                ${postHeader.outerHTML}  <!-- Use the dynamically created post header -->
                 <p>${post.content}</p>
                 <small>${post.timestamp}</small>
                 <p>
@@ -160,10 +191,20 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postContainer.appendChild(postElement);
         });
 
+        // Display the most popular hashtags
+        const hashtagCounts = {};
+        posts.forEach(post => {
+            post.hashtags.forEach(tag => {
+                hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
+            });
+        });
+        displayTopHashtags(hashtagCounts);
+
     } catch (error) {
         console.error("Error loading posts:", error);
     }
 }
+
 
 function matchSearchQuery(content, query) {
     if (query.startsWith("#")) {

@@ -307,3 +307,15 @@
     ::-webkit-scrollbar-corner {
         background-color: transparent;
     }
+
+    .admin-emblem {
+        background-color: red;
+        color: white;
+        font-size: 12px;
+        padding: 2px 6px;
+        margin-left: 8px;
+        border-radius: 5px;
+        font-weight: bold;
+        position: relative;
+        bottom: 0.25rem;   
+    }
