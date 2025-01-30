@@ -3,3 +3,4 @@ data.json
 .idea
 .vscode
 venv
+app/node_modules
