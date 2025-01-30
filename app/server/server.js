@@ -323,6 +323,18 @@ app.delete("/posts/:id", async (req, res) => {
     }
 });
 
+// GET /rooms/:id - Fetch messages for a specific room
+app.get("/rooms/:id", async (req, res) => {
+    const roomId = req.params.id;
+    try {
+        const rooms = await readRooms();
+        const messages = rooms[roomId] || [];
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ message: "Error loading messages" });
+    }
+});
+
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "client/public")));

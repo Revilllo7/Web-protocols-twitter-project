@@ -16,43 +16,5 @@
     "hashtags": [],
     "timestamp": "2025-01-30T17:29:04.408Z",
     "edited": false
-  },
-  {
-    "id": "c26f59f7-b8eb-4cc9-bf43-c7515f2fa3c9",
-    "user": "test",
-    "content": "więcej hashów",
-    "hashtags": [
-      "tag",
-      "yippe",
-      "test"
-    ],
-    "timestamp": "2025-01-30T17:31:40.718Z",
-    "edited": false
-  },
-  {
-    "id": "82edac2d-1012-499e-b2f5-be76c3270c59",
-    "user": "test",
-    "content": "we",
-    "hashtags": [],
-    "timestamp": "2025-01-30T17:33:40.398Z",
-    "edited": false
-  },
-  {
-    "id": "b6bf110e-0335-4ff6-8450-a2a1537a225f",
-    "user": "admin",
-    "content": "now we're using cookies!",
-    "hashtags": [
-      "hell yea"
-    ],
-    "timestamp": "2025-01-30T17:57:03.929Z",
-    "edited": false
-  },
-  {
-    "id": "5655d4bd-90e5-4acb-98ba-c6b3a4b8fe59",
-    "user": "admin",
-    "content": "now we're using cookies! edd",
-    "hashtags": [],
-    "timestamp": "2025-01-30T22:46:33.308Z",
-    "edited": false
   }
 ]
