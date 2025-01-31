@@ -4,8 +4,8 @@
     "description": "A Twitter/X-like dynamic app using Express and React",
     "main": "server.js",
     "scripts": {
-        "start": "node server.js",
-        "dev": "nodemon server.js"
+        "start": "node server.mjs",
+        "dev": "nodemon server.mjs"
     },
     "author": "",
     "license": "MIT",

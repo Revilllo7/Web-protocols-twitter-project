@@ -26,8 +26,105 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("search-bar");
     searchInput.addEventListener("input", (e) => {
         const query = e.target.value.trim();
-         loadPosts(null, query); // Reload posts based on search query
-     }); // Load all posts initially
+        loadPosts(null, query); // Reload posts based on search query
+    }); // Load all posts initially
+
+    // Establish WebSocket connection to the server
+    const socket = new WebSocket("ws://localhost:3001");
+
+    // Handle incoming WebSocket messages
+    socket.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        displayMessage(data.room, data.message);
+    });
+
+    // Function to handle message sending in a room
+    window.sendMessage = function(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        const messageInput = document.getElementById("message-input");
+        const message = messageInput.value.trim();
+        const activeRoomElement = document.querySelector(".message-container.active-room");
+
+        if (!activeRoomElement) {
+            alert("No active room selected.");
+            return;
+        }
+
+        const activeRoom = activeRoomElement.id;
+
+        if (!message) {
+            alert("Message cannot be empty.");
+            return;
+        }
+
+        const room = activeRoom.replace("room-", ""); // Extract room number from the ID
+
+        socket.send(JSON.stringify({ room, message }));
+
+        // Clear the input field after sending the message
+        messageInput.value = "";
+    }
+
+    // Add event listener to the send message button
+    const sendMessageButton = document.getElementById("send-message-button");
+    sendMessageButton.addEventListener("click", sendMessage);
+
+    // Add event listeners for each room button
+    const roomButtons = document.querySelectorAll(".room-button");
+    roomButtons.forEach(button => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default action
+            let roomId = button.getAttribute("data-room");  // Get the room ID directly (room1, room2, room3, room4)
+            roomId = roomId.replace('room', ''); // Extract the number from the room ID
+            switchRoom(roomId);  // Pass the roomId directly to switchRoom
+        });
+    });
+
+    // Function to switch rooms
+    async function switchRoom(roomId) {
+        // Hide all rooms
+        const rooms = document.querySelectorAll(".message-container");
+        rooms.forEach(room => room.style.display = "none");
+
+        // Remove 'active-room' class from all rooms
+        rooms.forEach(room => room.classList.remove("active-room"));
+
+        // Correctly select the room by its ID
+        const newRoom = document.getElementById(`room-${roomId}`); // Room should have room-ID (e.g., room-1)
+
+        if (newRoom) {  // Check if the room element exists
+            newRoom.style.display = "block";  // Show the room
+            newRoom.classList.add("active-room");  // Add active class to the room
+
+            // Fetch and display messages for the selected room
+            try {
+                const response = await fetch(`https://localhost:3000/rooms/${roomId}`);
+                if (!response.ok) throw new Error("Failed to load messages");
+                const messages = await response.json();
+
+                const messageList = newRoom.querySelector(".message-list");
+                messageList.innerHTML = ""; // Clear existing messages
+
+                messages.forEach(message => {
+                    displayMessage(roomId, message);
+                });
+            } catch (error) {
+                console.error("Error loading messages:", error);
+            }
+        } else {
+            console.error(`Room with id 'room-${roomId}' not found.`);
+        }
+    }
+
+    // A simple function to display messages in the respective room
+    function displayMessage(room, message) {
+        const roomDiv = document.querySelector(`#room-${room} .message-list`);
+        const messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        roomDiv.appendChild(messageElement);
+        roomDiv.scrollTop = roomDiv.scrollHeight;  // Auto-scroll to the latest message
+    }
 });
 
 // Utility function to set a cookie
@@ -56,7 +153,7 @@ function getCookie(name) {
 
 async function login(username, password) {
     try {
-        const response = await fetch("http://localhost:3000/login", {
+        const response = await fetch("https://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -97,7 +194,7 @@ async function addPost() {
     console.log("Request Body:", { user: username, content, hashtags });
 
     try {
-        const response = await fetch("http://localhost:3000/posts", {
+        const response = await fetch("https://localhost:3000/posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -123,7 +220,7 @@ async function addPost() {
 
 async function loadPosts(filteredTag = null, searchQuery = "") {
     try {
-        const response = await fetch("http://localhost:3000/posts");
+        const response = await fetch("https://localhost:3000/posts");
         if (!response.ok) throw new Error("Failed to load posts");
         const posts = await response.json();
 
@@ -242,7 +339,8 @@ function displayTopHashtags(hashtagCounts) {
     });
 
     document.querySelectorAll(".top-hashtag-button").forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default action
             const selectedHashtag = button.dataset.hashtag;
             loadPosts(selectedHashtag);
         });
@@ -274,12 +372,13 @@ async function editPost(post) {
     postButton.removeEventListener("click", handleSave);
     postButton.addEventListener("click", handleSave);
 
-    async function handleSave() {
+    async function handleSave(event) {
+        event.preventDefault(); // Prevent default action
         try {
             const updatedContent = postTextElement.value.trim();
-            if (updatedContent === post.content) return; // No change to save
+            if (updatedContent === post.content) return; 
 
-            const response = await fetch(`http://localhost:3000/posts/${post.id}`, {
+            const response = await fetch(`https://localhost:3000/posts/${post.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -319,7 +418,7 @@ async function removePost(postId) {
 
     try {
         console.log("Sending DELETE request...");
-        const response = await fetch(`http://localhost:3000/posts/${postId}`, {
+        const response = await fetch(`https://localhost:3000/posts/${postId}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, role })
@@ -340,100 +439,9 @@ async function removePost(postId) {
 
 // Fetch a post by ID
 async function fetchPostById(postId) {
-    const response = await fetch(`http://localhost:3000/posts/${postId}`);
+    const response = await fetch(`https://localhost:3000/posts/${postId}`);
     if (response.ok) {
         return response.json();
     }
     return null;
 }
-
-// Establish WebSocket connection to the server
-const socket = new WebSocket("ws://localhost:3001");
-
-// Function to handle message sending in a room
-function sendMessage(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
-
-    const messageInput = document.getElementById("message-input");
-    const message = messageInput.value.trim();
-    const activeRoom = document.querySelector(".message-container.active-room").id;
-
-    if (!message) {
-        alert("Message cannot be empty.");
-        return;
-    }
-
-    const room = activeRoom.replace("room-", ""); // Extract room number from the ID
-
-    socket.send(JSON.stringify({ room, message }));
-
-    // Clear the input field after sending the message
-    messageInput.value = "";
-}
-
-// A simple function to display messages in the respective room
-function displayMessage(room, message) {
-    const roomDiv = document.querySelector(`#room-${room} .message-list`);
-    const messageElement = document.createElement("div");
-    messageElement.textContent = message;
-    roomDiv.appendChild(messageElement);
-    roomDiv.scrollTop = roomDiv.scrollHeight;  // Auto-scroll to the latest message
-}
-
-// Handle incoming WebSocket messages
-socket.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-    displayMessage(data.room, data.message);
-});
-
-// Function to switch rooms
-async function switchRoom(roomId) {
-    // Hide all rooms
-    const rooms = document.querySelectorAll(".message-container");
-    rooms.forEach(room => room.style.display = "none");
-
-    // Remove 'active-room' class from all rooms
-    rooms.forEach(room => room.classList.remove("active-room"));
-
-    // Correctly select the room by its ID
-    const newRoom = document.getElementById(`room-${roomId}`); // Room should have room-ID (e.g., room-1)
-
-    if (newRoom) {  // Check if the room element exists
-        newRoom.style.display = "block";  // Show the room
-        newRoom.classList.add("active-room");  // Add active class to the room
-
-        // Fetch and display messages for the selected room
-        try {
-            const response = await fetch(`http://localhost:3000/rooms/${roomId}`);
-            if (!response.ok) throw new Error("Failed to load messages");
-            const messages = await response.json();
-
-            const messageList = newRoom.querySelector(".message-list");
-            messageList.innerHTML = ""; // Clear existing messages
-
-            messages.forEach(message => {
-                displayMessage(roomId, message);
-            });
-        } catch (error) {
-            console.error("Error loading messages:", error);
-        }
-    } else {
-        console.error(`Room with id 'room-${roomId}' not found.`);
-    }
-}
-
-// Add event listeners for each room button
-document.addEventListener("DOMContentLoaded", () => {
-    const roomButtons = document.querySelectorAll(".room-button");
-    roomButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            let roomId = button.getAttribute("data-room");  // Get the room ID directly (room1, room2, room3, room4)
-            roomId = roomId.replace('room', ''); // Extract the number from the room ID
-            switchRoom(roomId);  // Pass the roomId directly to switchRoom
-        });
-    });
-
-    // Add event listener to the send message button
-    const sendMessageButton = document.getElementById("send-message-button");
-    sendMessageButton.addEventListener("click", sendMessage);
-});
