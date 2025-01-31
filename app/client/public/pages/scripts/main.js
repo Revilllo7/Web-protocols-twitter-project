@@ -22,7 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         greetingElement.appendChild(profilePicture);
     }
-    loadPosts(); // Load all posts initially
+    loadPosts();
+    const searchInput = document.getElementById("search-bar");
+    searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim();
+         loadPosts(null, query); // Reload posts based on search query
+     }); // Load all posts initially
 });
 
 // Utility function to set a cookie
@@ -63,7 +68,7 @@ async function login(username, password) {
             setCookie("role", result.role); // Store user role in cookie
             loadPosts(); // Reload posts after successful login
         } else {
-            alert(result.message);
+            // alert(result.message);
         }
     } catch (error) {
         console.error("Error logging in:", error);
@@ -128,7 +133,31 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
         const username = getCookie("username");
         const isAdmin = getCookie("role") === "admin"; // Use role from cookies
 
-        // Add "Show All Posts" button if filtering by tag or search query
+        // Preserve top hashtags by calculating them first
+        const hashtagCounts = {};
+        posts.forEach(post => {
+            post.hashtags.forEach(tag => {
+                hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
+            });
+        });
+        displayTopHashtags(hashtagCounts); // Ensure top hashtags are displayed before filtering
+
+        // Filtering logic: consider both hashtags and search query
+        let filteredPosts = posts;
+        
+        if (filteredTag) {
+            filteredPosts = filteredPosts.filter(post => post.hashtags.includes(filteredTag));
+        }
+
+        if (searchQuery) {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            filteredPosts = filteredPosts.filter(post => 
+                post.content.toLowerCase().includes(lowerCaseQuery) || 
+                post.hashtags.some(tag => tag.toLowerCase().includes(lowerCaseQuery.replace("#", "")))
+            );
+        }
+
+        // Show "Show All Posts" button if filtering
         if (filteredTag || searchQuery) {
             const resetButton = document.createElement("button");
             resetButton.textContent = "Show All Posts";
@@ -137,39 +166,35 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
             postContainer.appendChild(resetButton);
         }
 
-        // Filter posts based on the selected hashtag (filteredTag)
-        const filteredPosts = filteredTag ? posts.filter(post => post.hashtags.includes(filteredTag)) : posts;
-
+        // Render filtered posts
         filteredPosts.forEach(post => {
             const postElement = document.createElement("div");
             postElement.classList.add("post");
-        
+
             const identiconUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(post.user)}`;
-        
-            // Create the post header
+
             const postHeader = document.createElement("h3");
             const identiconImg = document.createElement("img");
             identiconImg.classList.add("identicon");
             identiconImg.src = identiconUrl;
             identiconImg.alt = "Identicon";
-            
+
             const usernameSpan = document.createElement("span");
             usernameSpan.classList.add("username");
             usernameSpan.textContent = post.user;
-        
-            // Add admin emblem if the post author is admin
+
             if (post.user === "admin") {
                 const adminEmblem = document.createElement("span");
                 adminEmblem.classList.add("admin-emblem");
                 adminEmblem.textContent = "Admin";
                 usernameSpan.appendChild(adminEmblem);
             }
-        
+
             postHeader.appendChild(identiconImg);
             postHeader.appendChild(usernameSpan);
-        
+
             postElement.innerHTML = `
-                ${postHeader.outerHTML}  <!-- Use the dynamically created post header -->
+                ${postHeader.outerHTML}  
                 <p>${post.content}</p>
                 <small>${post.timestamp}</small>
                 <p>
@@ -180,28 +205,22 @@ async function loadPosts(filteredTag = null, searchQuery = "") {
                         `<button class="edit-button" onclick="editPost(${JSON.stringify(post).replace(/"/g, '&quot;')})">Edit</button>
                         <button class="remove-button" onclick="removePost('${post.id}')">Remove</button>` 
                     : ''}
-                `;
+            `;
             postContainer.appendChild(postElement);
         });
-
-        // Display the most popular hashtags
-        const hashtagCounts = {};
-        posts.forEach(post => {
-            post.hashtags.forEach(tag => {
-                hashtagCounts[tag] = (hashtagCounts[tag] || 0) + 1;
-            });
-        });
-        displayTopHashtags(hashtagCounts);
 
     } catch (error) {
         console.error("Error loading posts:", error);
     }
 }
 
+// Function to match search query in content, including hashtags
 function matchSearchQuery(content, query) {
+    // If the query starts with "#", treat it as a hashtag search
     if (query.startsWith("#")) {
         return content.toLowerCase().includes(query.toLowerCase());
     }
+    // Otherwise, search for the string in the content
     return content.toLowerCase().includes(query.toLowerCase());
 }
 

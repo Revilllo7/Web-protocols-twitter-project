@@ -8,5 +8,35 @@
     "username": "oliver",
     "password": "$2b$10$c2sMY81NtBJu6EqYwPDlAuKkfth.0D9yTHg2TunMafQyJ7ztAka2K",
     "role": "user"
+  },
+  {
+    "username": "Obszar69",
+    "password": "$2b$10$0I5RFgVfBJl.rf91z3H1meN/CjWmpxu0MVCPXo5SQxtB02kzxKy9C",
+    "role": "user"
+  },
+  {
+    "username": "Twoja Stara",
+    "password": "$2b$10$qm9nw6S4XGlvuziHauv.TuZjdn/wkmJ/Ly2gX4XtaFkwsOQ25aQ0m",
+    "role": "user"
+  },
+  {
+    "username": "Skyyyyyyyyyyyyy",
+    "password": "$2b$10$lX9J/0t6jToSqmWdeLp.ieYtn8jTH1B6jnKIiH9TfbyrbIlNbobm2",
+    "role": "user"
+  },
+  {
+    "username": "Miodex",
+    "password": "$2b$10$UnfduQMXS9bg4pzYqWr1c.rA1BNosTCfLmjc3AgV6gc4lnYB8tD1m",
+    "role": "user"
+  },
+  {
+    "username": "kanapek",
+    "password": "$2b$10$o.eZhf1UMq2wEouWVeGXEOsPo.oyRHwMmmduSUaqdXDqMT6x7QZYy",
+    "role": "user"
+  },
+  {
+    "username": "riskcapcap",
+    "password": "$2b$10$BkcvHBcRuMgUgrNBwQG09esFKcEvNfxZl94h6Bbo5VKHeOSK.2/la",
+    "role": "user"
   }
 ]
