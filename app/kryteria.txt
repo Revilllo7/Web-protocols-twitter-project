@@ -52,6 +52,7 @@ Inne:
 - Wykorzystanie certyfikatu TLS
 - Użycie ciasteczek do przechowywania danych użytkownika
 - Korzystanie z pokoji (WebSocket TCP)
+- Cenzura
 
 ---------------------------------------------------------------------------
 
