@@ -1,16 +1,26 @@
 import express from "express";
+import https from "https";
 import cors from "cors";
 import path from "path";
 import { promises as fs } from "fs";
 import bcrypt from "bcrypt";
-import  WebSocket from "ws";
+import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
-import { Filter } from "bad-words";
+import Filter from "bad-words";
 import { fileURLToPath } from "url";
+import winston from "winston";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const filter = new Filter();
 const PORT = 3000;
+
+const options = {
+    key: fs.readFileSync(process.env.SSL_KEY_PATH),
+    cert: fs.readFileSync(process.env.SSL_CERT_PATH)
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +39,28 @@ app.use(cors(corsOptions)); // Apply CORS middleware with these options
 
 // Middleware
 app.use(express.json());
+
+// Initialize the logger
+const logger = winston.createLogger({
+    level: "info",
+    format: winston.format.json(),
+    transports: [
+        new winston.transports.File({ filename: "error.log", level: "error" }),
+        new winston.transports.File({ filename: "combined.log" })
+    ]
+});
+
+// Log all requests
+app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url}`);
+    next();
+});
+
+// Log errors
+app.use((err, req, res, next) => {
+    logger.error(err.stack);
+    res.status(500).send("Something broke!");
+});
 
 // Check if the users.json and rooms.json files exist, if not, create them
 const fileExists = async (filePath) => {
@@ -171,8 +203,7 @@ app.post("/login", async (req, res) => {
 });
 
 // WebSocket server
-const wss = new WebSocket.Server({ port: 3001 });
-
+const wss = new WebSocketServer({ port: 3001 });
 
 // WebSocket connection handling
 wss.on("connection", (ws) => {
@@ -220,11 +251,12 @@ wss.on("connection", (ws) => {
     });
 });
 
-console.log('WebSocket server is running on ws://localhost:3000');
+console.log('WebSocket server is running on ws://localhost:3001');
 
 // WebSocket upgrade handling for HTTP server
-const server = app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+const server = https.createServer(options, app);
+server.listen(PORT, () => {
+    console.log(`Server running on https://localhost:${PORT}`);
 });
 
 server.on("upgrade", (request, socket, head) => {
@@ -350,6 +382,9 @@ app.get("/rooms/:id", async (req, res) => {
         res.status(500).json({ message: "Error loading messages" });
     }
 });
+
+// COMMENTS
+
 
 
 // Serve static files

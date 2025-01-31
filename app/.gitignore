@@ -5,3 +5,6 @@ data.json
 venv
 app/node_modules
 node_modules
+server.key
+server.cert
+.env
