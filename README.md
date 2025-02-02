@@ -1,5 +1,6 @@
 Author: Oliver Gruba
-Group: Group 4
+Group: 4
+
 ---
 
 # Evaluation Summary
@@ -30,7 +31,6 @@ Group: Group 4
        socket.send(JSON.stringify({ room: "1", message: "Hello, Room 1!" }));
        ```
      - Total: 0.39 pkt.
-
    - **READ**:
      - Fetch all posts (`/posts`) - 0.13 pkt.
        ```http
@@ -45,8 +45,8 @@ Group: Group 4
        GET /rooms/1
        ```
      - Total: 0.39 pkt.
-
    - **UPDATE**:
+
      - Update post endpoint (`/posts/:id`) - 0.13 pkt.
        ```http
        PUT /posts/1
@@ -55,7 +55,13 @@ Group: Group 4
          "username": "username"
        }
        ```
-     - Total: 0.13 pkt.
+     - Update user password (`/username/`) - 0.13 pkt.
+
+       ```http
+       app.put('/edit-password'
+       ```
+
+     - Total: 0.26 pkt.
 
    - **DELETE**:
      - Delete post endpoint (`/posts/:id`) - 0.13 pkt.
@@ -66,19 +72,21 @@ Group: Group 4
          "role": "admin"
        }
        ```
-     - Total: 0.13 pkt.
-
+     - Delete user account (`/users/:username`) - 0.13 pkt.
+     ```http
+       app.delete('/users/:username',
+     ```
+     - Total: 0.26 pkt.
 2. **Search Functionality**:
    - Search posts by content and hashtags - 0.25 pkt.
      ```javascript
      const searchInput = document.getElementById("search-bar");
      searchInput.addEventListener("input", (e) => {
-         const query = e.target.value.trim();
-         loadPosts(null, query); // Reload posts based on search query
+       const query = e.target.value.trim();
+       loadPosts(null, query); // Reload posts based on search query
      });
      ```
    - Total: 0.25 pkt.
-
 3. **Login Functionality**:
    - Login endpoint (`/login`) - 0.5 pkt.
      ```http
@@ -89,23 +97,15 @@ Group: Group 4
      }
      ```
    - Total: 0.5 pkt.
-
 4. **Client to Handle Endpoints**:
-   - Client-side code handles:
-     - login
-     - register
-     - add post
-     - edit post
-     - delete post
-     - fetch posts
-... (117 lines left)
-Collapse
-message.txt
-6 KB
-﻿
+   - Client-side code handles: - login - register - add post - edit post - delete post - fetch posts
+     ... (117 lines left)
+     Collapse
+     message.txt
+     6 KB
+
 Author: Oliver Gruba
 Group: Group 4
-
 
 # Evaluation Summary
 
@@ -135,7 +135,6 @@ Group: Group 4
        socket.send(JSON.stringify({ room: "1", message: "Hello, Room 1!" }));
        ```
      - Total: 0.39 pkt.
-
    - **READ**:
      - Fetch all posts (`/posts`) - 0.13 pkt.
        ```http
@@ -150,7 +149,6 @@ Group: Group 4
        GET /rooms/1
        ```
      - Total: 0.39 pkt.
-
    - **UPDATE**:
      - Update post endpoint (`/posts/:id`) - 0.13 pkt.
        ```http
@@ -161,7 +159,6 @@ Group: Group 4
        }
        ```
      - Total: 0.13 pkt.
-
    - **DELETE**:
      - Delete post endpoint (`/posts/:id`) - 0.13 pkt.
        ```http
@@ -172,18 +169,16 @@ Group: Group 4
        }
        ```
      - Total: 0.13 pkt.
-
 2. **Search Functionality**:
    - Search posts by content and hashtags - 0.25 pkt.
      ```javascript
      const searchInput = document.getElementById("search-bar");
      searchInput.addEventListener("input", (e) => {
-         const query = e.target.value.trim();
-         loadPosts(null, query); // Reload posts based on search query
+       const query = e.target.value.trim();
+       loadPosts(null, query); // Reload posts based on search query
      });
      ```
    - Total: 0.25 pkt.
-
 3. **Login Functionality**:
    - Login endpoint (`/login`) - 0.5 pkt.
      ```http
@@ -194,7 +189,6 @@ Group: Group 4
      }
      ```
    - Total: 0.5 pkt.
-
 4. **Client to Handle Endpoints**:
    - Client-side code handles:
      - login
@@ -205,8 +199,7 @@ Group: Group 4
      - fetch posts
      - WebSocket messages.
    - Total: X pkt.
-
-**Total for HTTP**: 0.39 + 0.39 + 0.13 + 0.13 + 0.5 + 0.5 + 3 = 6 pkt.
+     **Total for HTTP**: 0.39 + 0.39 + 0.13 + 0.13 + 0.5 + 0.5 + 3 = 6 pkt.
 
 ## MQTT, WebSocket (6 pkt.)
 
@@ -215,22 +208,21 @@ Group: Group 4
      ```javascript
      const wss = new WebSocketServer({ port: 3001 });
      wss.on("connection", (ws) => {
-         console.log('New client connected');
-         ws.on('message', async (message) => {
-             // Handle incoming messages
-         });
+       console.log("New client connected");
+       ws.on("message", async (message) => {
+         // Handle incoming messages
+       });
      });
      ```
    - Handling messages and room switching - X pkt.
      ```javascript
-     ws.on('message', async (message) => {
-         const parsedMessage = JSON.parse(message);
-         const { room, message: msg } = parsedMessage;
-         // Handle message for the specific room
+     ws.on("message", async (message) => {
+       const parsedMessage = JSON.parse(message);
+       const { room, message: msg } = parsedMessage;
+       // Handle message for the specific room
      });
      ```
    - Total: X pkt.
-
 2. **Frontend WebSocket**:
    - Establishing WebSocket connection - X pkt.
      ```javascript
@@ -240,13 +232,12 @@ Group: Group 4
      ```javascript
      socket.send(JSON.stringify({ room: "1", message: "Hello, Room 1!" }));
      socket.addEventListener("message", (event) => {
-         const data = JSON.parse(event.data);
-         displayMessage(data.room, data.message);
+       const data = JSON.parse(event.data);
+       displayMessage(data.room, data.message);
      });
      ```
    - Total: X pkt.
-
-**Total for MQTT, WebSocket**: 2 + 2 = 4 pkt.
+     **Total for MQTT, WebSocket**: 2 + 2 = 4 pkt.
 
 ## Other (6 pkt.)
 
@@ -254,52 +245,52 @@ Group: Group 4
    - Sensible use of cookies for login and role management - X pkt.
      ```javascript
      function setCookie(name, value, days = 7) {
-         const expires = new Date();
-         expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-         document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}; Secure; SameSite=Lax`;
+       const expires = new Date();
+       expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+       document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}; Secure; SameSite=Lax`;
      }
      ```
    - User roles and permissions (admin, user) - X pkt.
      ```javascript
      if (role !== "admin" && post.user !== username) {
-         alert("You are not authorized to edit this post.");
-         return;
+       alert("You are not authorized to edit this post.");
+       return;
      }
      ```
 2. **TLS/SSL** - X pkt.
    -TLS: Transport Layer Security
    -SSL: Secure Sockets Layer
-
-    ```javascript
-    import https from "https";
-    const server = https.createServer(options, app);
-    server.listen(PORT, () => {
-      console.log(`Server running on https://localhost:${PORT}`);
-    });
-
-    server.on("upgrade", (request, socket, head) => {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit("connection", ws, request);
-      });
-    });
-    ```
+   ```javascript
+   import https from "https";
+   const server = https.createServer(options, app);
+   server.listen(PORT, () => {
+     console.log(`Server running on https://localhost:${PORT}`);
+   });
+   server.on("upgrade", (request, socket, head) => {
+     wss.handleUpgrade(request, socket, head, (ws) => {
+       wss.emit("connection", ws, request);
+     });
+   });
+   ```
 3. **Winston logging** - X pkt.
-  - logs all requests
-  - logs errors
-    ```javascript
-    const logger = winston.createLogger({
+
+- logs all requests
+- logs errors
+  ```javascript
+  const logger = winston.createLogger({
     level: "info",
     format: winston.format.json(),
     transports: [
-        new winston.transports.File({ filename: "error.log", level: "error" }),
-        new winston.transports.File({ filename: "combined.log" })
-    ]
-    });
-    ```
-4. **Profanity filter** - X pkt.
-  - kurwa? --> *****?
+      new winston.transports.File({ filename: "error.log", level: "error" }),
+      new winston.transports.File({ filename: "combined.log" }),
+    ],
+  });
+  ```
 
-**Total for Inne**: X pkt.
+4. **Profanity filter** - X pkt.
+
+- kurwa? --> *****?
+  **Total for Inne**: X pkt.
 
 ## Aplikacja (2 pkt.)
 
@@ -308,8 +299,7 @@ Group: Group 4
    - Use of modern JavaScript features and libraries.
    - Application works without errors.
    - Total: X pkt.
-
-**Total for Aplikacja**: X pkt.
+     **Total for Aplikacja**: X pkt.
 
 ## Final Score
 
@@ -317,7 +307,6 @@ Group: Group 4
 - **MQTT, WebSocket**: X pkt.
 - **Inne**: X pkt.
 - **Aplikacja**: X pkt.
-
-**Max**: 6 + 6 + 6 + 2 = 20 pkt.
-**Expected**: 
-**Total**: 6 + 4 + 3 + 2 = 15 pkt.
+  **Max**: 6 + 6 + 6 + 2 = 20 pkt.
+  **Expected**:
+  **Total**: 6 + 4 + 3 + 2 = 15 pkt.

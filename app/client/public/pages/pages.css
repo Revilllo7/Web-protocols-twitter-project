@@ -275,3 +275,35 @@ footer {
     width: 100%;
     resize: none;
 }
+
+.profile-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+img {
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+}
+
+button {
+    margin: 10px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.remove-btn {
+    background-color: red;
+    color: white;
+}
+
+.edit-btn {
+    background-color: blue;
+    color: white;
+}

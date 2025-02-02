@@ -1,0 +1,64 @@
+HTTP:
+Create:
+Rejestracja użytkownika (POST /register) - 0.13 pkt.
+Dodawanie postów (POST /posts) - 0.13 pkt.
+Wysyłanie wiadomości (POST /rooms/:id/messages) - 0.13 pkt.
+razem: 0.39 pkt.
+
+Read:
+Pobieranie postów (GET /posts) - 0.13 pkt.
+Pobieranie pojedynczego postu (GET /posts/:id) - 0.13 pkt.
+Pobieranie wiadomości z pokoju (GET /rooms/:id) - 0.13 pkt.
+Razem: 0.39 pkt.
+
+Update:
+update postów - 0.13 pkt.
+update hasła - 0.13 pkt. 
+Razem: 0.26 pkt.
+
+Delete:
+Usuwanie postów (DELETE /posts/:id) - 0.13 pkt.
+usuwanie konta (DELETE /users/${username}) - 0.13 pkt
+Razem: 0.26 pkt.
+
+Wyszukiwanie:
+filtry, renderowanie, tworzenie elementów - 0.25 pkt.
+
+Logowanie:
+POST /login - 0.5 pkt.
+
+Klient:
+strony: login.html, main.html, about_us.html, contact.html, help.html - stylowane
+JS:
+- register
+- login + websocket
+- addPost
+- loadPost
+- deletePost
+- addMessage
+- loadMessage
+- switchRoom + websocket
+- joinRoom + websocket
+- loadRoom + websocket
+
+---------------------------------------------------------------------------
+MQTT, WebSocket:
+- roomMessages - WebSocketServer
+- sendMessage z frontendu - WebSocket
+- odbieranie wiadomości przez WebSocket - socket.addEventListener("message", ...)
+
+---------------------------------------------------------------------------
+
+Inne:
+- Logowanie errorów i logów do pliku (Wilson)
+- Szyfrowanie haseł (Bcrypt)
+- Role użytkowników (Admin, User) [Admin może usuwać wszystkie posty i ma badge]
+- Wykorzystanie certyfikatu TLS [PROTOKOŁY]
+- Użycie ciasteczek do przechowywania danych użytkownika [PROTOKOŁY]
+- Korzystanie z pokoji (WebSocket TCP) [PROTOKOŁY]
+- Cenzura
+
+---------------------------------------------------------------------------
+
+Aplikacja:
+10/10 cudo

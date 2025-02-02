@@ -32,8 +32,8 @@ const ROOMS_FILE = path.join(__dirname, "rooms.json");
 const COMMENTS_FILE = path.join(__dirname, "comments.json");
 
 const corsOptions = {
-    origin: "http://localhost:5500", // Make sure this matches your frontend URL exactly
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: "http://localhost:5501", // Make sure this matches your frontend URL exactly
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
 };
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5500"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true"); // Allow cookies/auth headers
@@ -53,7 +53,7 @@ app.use((req, res, next) => {
 });
 
 app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5500"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -71,16 +71,19 @@ const logger = winston.createLogger({
     ]
 });
 
+// Log all requests
 app.use((req, res, next) => {
     logger.info(`${req.method} ${req.url}`);
     next();
 });
 
+// Log errors
 app.use((err, req, res, next) => {
     logger.error(err.stack);
     res.status(500).send("Something broke!");
 });
 
+// Check if the users.json and rooms.json files exist, if not, create them
 const fileExists = async (filePath) => {
     try {
         await fsPromises.access(filePath);
@@ -107,6 +110,7 @@ const initFiles = async () => {
 
 initFiles();
 
+// Read users from file
 const readUsers = async () => {
     try {
         const data = await fsPromises.readFile(USERS_FILE, "utf8");
@@ -116,6 +120,7 @@ const readUsers = async () => {
     }
 };
 
+// Write users to file
 async function writeUsers(users) {
     try {
         await fsPromises.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
@@ -125,6 +130,7 @@ async function writeUsers(users) {
     }
 }
 
+// Function to write updated posts to the posts.json file
 async function writePosts(posts) {
     try {
         await fsPromises.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), 'utf8');
@@ -134,6 +140,7 @@ async function writePosts(posts) {
     }
 }
 
+// Function to read posts from the posts.json file
 async function readPosts() {
     try {
         const data = await fsPromises.readFile(POSTS_FILE, 'utf8');
@@ -144,6 +151,7 @@ async function readPosts() {
     }
 }
 
+// Function to read messages from rooms.json
 async function readRooms() {
     try {
         const data = await fsPromises.readFile(ROOMS_FILE, 'utf8');
@@ -153,30 +161,12 @@ async function readRooms() {
     }
 }
 
+// Function to write messages to rooms.json
 async function writeRooms(rooms) {
     try {
         await fsPromises.writeFile(ROOMS_FILE, JSON.stringify(rooms, null, 2));
     } catch (err) {
         console.error("Error writing to rooms file:", err);
-        throw err;
-    }
-}
-
-async function readComments() {
-    try {
-        const data = await fsPromises.readFile(COMMENTS_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error("Error reading comments file:", err);
-        return {};
-    }
-}
-
-async function writeComments(comments) {
-    try {
-        await fsPromises.writeFile(COMMENTS_FILE, JSON.stringify(comments, null, 2));
-    } catch (err) {
-        console.error("Error writing to comments file:", err);
         throw err;
     }
 }
@@ -207,7 +197,7 @@ app.post('/register', (req, res) => {
         }
 
         const hashedPassword = bcrypt.hashSync(password, 10);
-        const newUser = { username, password: hashedPassword, role };
+        const newUser = { username, password: hashedPassword, role: role || 'user' };
 
         users.push(newUser);
 
@@ -220,6 +210,7 @@ app.post('/register', (req, res) => {
     });
 });
 
+// Login endpoint
 app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ message: "Login failed. Username and password are required." });
@@ -232,6 +223,7 @@ app.post("/login", async (req, res) => {
         return res.status(401).json({ success: false, message: "Invalid username" });
     }
     
+    // Ensure bcrypt is correctly comparing the password
     const passwordMatch = await bcrypt.compare(password, user.password);  
     if (!passwordMatch) {
         console.log("Wrong password attempt for user:", username);
@@ -242,86 +234,10 @@ app.post("/login", async (req, res) => {
     res.json({ success: true, message: "Login successful", role: user.role });
 });
 
-app.post("/posts/:id/comments", async (req, res) => {
-    const postId = req.params.id;
-    const { user, content } = req.body;
-
-    if (!user || !content) {
-        return res.status(400).json({ message: "User and content are required" });
-    }
-
-    try {
-        const comments = await readComments();
-        const newComment = {
-            id: uuidv4(),
-            user,
-            content,
-            timestamp: new Date().toISOString(),
-        };
-
-        comments[postId] = comments[postId] || [];
-        comments[postId].push(newComment);
-
-        await writeComments(comments);
-        res.status(201).json(newComment);
-    } catch (err) {
-        console.error("Error adding comment:", err);
-        res.status(500).json({ message: "Server error while adding comment" });
-    }
-});
-
-app.get("/posts/:id/comments", async (req, res) => {
-    const postId = req.params.id;
-    try {
-        const comments = await readComments();
-        res.json(comments[postId] || []);
-    } catch (err) {
-        console.error("Error fetching comments:", err);
-        res.status(500).json({ message: "Server error while fetching comments" });
-    }
-});
-
-app.put("/posts/:postId/comments/:commentId", async (req, res) => {
-    const { postId, commentId } = req.params;
-    const { content } = req.body;
-
-    try {
-        const comments = await readComments();
-        const postComments = comments[postId] || [];
-        const comment = postComments.find(c => c.id === commentId);
-
-        if (!comment) {
-            return res.status(404).json({ message: "Comment not found" });
-        }
-
-        comment.content = content;
-        comment.timestamp = new Date().toISOString();
-
-        await writeComments(comments);
-        res.status(200).json(comment);
-    } catch (err) {
-        console.error("Error updating comment:", err);
-        res.status(500).json({ message: "Server error while updating comment" });
-    }
-});
-
-app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
-    const { postId, commentId } = req.params;
-
-    try {
-        const comments = await readComments();
-        comments[postId] = comments[postId].filter(c => c.id !== commentId);
-
-        await writeComments(comments);
-        res.status(200).json({ message: "Comment deleted successfully" });
-    } catch (err) {
-        console.error("Error deleting comment:", err);
-        res.status(500).json({ message: "Server error while deleting comment" });
-    }
-});
-
+// WebSocket server
 const wss = new WebSocketServer({ port: 3001 });
 
+// WebSocket connection handling
 wss.on("connection", (ws) => {
     console.log('New client connected');
 
@@ -332,17 +248,22 @@ wss.on("connection", (ws) => {
 
             console.log(`Received message: ${msg} in room: ${room}`);
 
+            // Filter the message for profanity
             const cleanMessage = filter.clean(msg);
 
+            // Read the current rooms data
             const rooms = await readRooms();
 
+            // Add the message to the appropriate room
             if (!rooms[room]) {
                 rooms[room] = [];
             }
             rooms[room].push(cleanMessage);
 
+            // Save the updated rooms data
             await writeRooms(rooms);
 
+            // Broadcast the message to all clients
             wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
                     client.send(JSON.stringify({ room, message: cleanMessage }));
@@ -362,8 +283,9 @@ wss.on("connection", (ws) => {
     });
 });
 
-console.log('WebSocket server is running on ws://localhost:3001');
+console.log('WebSocket server is running on wss://localhost:3001');
 
+// WebSocket upgrade handling for HTTPS server
 const server = https.createServer(options, app);
 server.listen(PORT, () => {
     console.log(`Server running on https://localhost:${PORT}`);
@@ -375,6 +297,7 @@ server.on("upgrade", (request, socket, head) => {
     });
 });
 
+// GET /posts - Fetch all posts
 app.get("/posts", async (req, res) => {
     try {
         const posts = await readPosts();
@@ -385,6 +308,7 @@ app.get("/posts", async (req, res) => {
     }
 });
 
+// GET /posts/:id - Fetch a specific post by ID
 app.get("/posts/:id", async (req, res) => {
     const postId = req.params.id;
     const posts = await readPosts();
@@ -395,16 +319,20 @@ app.get("/posts/:id", async (req, res) => {
     res.json(post);
 });
 
+// POST endpoint to add new posts
 app.post("/posts", async (req, res) => {
     const { user, content, hashtags } = req.body;
     if (!user || !content) {
         return res.status(400).json({ message: "User and content are required" });
     }
 
+    // Filter the content for profanity
     const cleanContent = filter.clean(content);
 
+    // Get the current posts from the posts file
     const posts = await readPosts();
 
+    // Generate a new unique post ID
     let newPost = {
         id: uuidv4(),
         user,
@@ -421,10 +349,12 @@ app.post("/posts", async (req, res) => {
     res.status(201).json(newPost);
 });
 
+// PUT endpoint to update an existing post
 app.put("/posts/:id", async (req, res) => {
     const postId = req.params.id;
     const { content } = req.body;
     const posts = await readPosts();
+
 
     const post = posts.find(p => p.id === postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
@@ -434,6 +364,7 @@ app.put("/posts/:id", async (req, res) => {
         return res.status(403).json({ message: "You are not authorized to edit this post" });
     }
 
+    // Filter the content for profanity
     const cleanContent = filter.clean(content);
 
     post.content = cleanContent;
@@ -444,6 +375,7 @@ app.put("/posts/:id", async (req, res) => {
     res.status(200).json(post);
 });
 
+// DELETE endpoint to remove a post
 app.delete("/posts/:id", async (req, res) => {
     const postId = req.params.id;
     const { username, role } = req.body;
@@ -470,6 +402,7 @@ app.delete("/posts/:id", async (req, res) => {
     }
 });
 
+// GET /rooms/:id - Fetch messages for a specific room
 app.get("/rooms/:id", async (req, res) => {
     const roomId = req.params.id;
     try {
@@ -481,4 +414,57 @@ app.get("/rooms/:id", async (req, res) => {
     }
 });
 
+// EDIT PASSWORD
+app.put('/edit-password', async (req, res) => {
+    const { username, newPassword } = req.body;
+
+    if (!username || !newPassword) {
+        return res.status(400).json({ message: 'Username and new password are required.' });
+    }
+
+    try {
+        const users = await readUsers();
+        const user = users.find(user => user.username === username);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        user.password = bcrypt.hashSync(newPassword, 10);
+
+        await writeUsers(users);
+        res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({ message: 'Server error occurred while updating password.' });
+    }
+});
+
+// DELETE USER
+app.delete('/users/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        let users = await readUsers();
+        const userExists = users.some(user => user.username === username);
+
+        if (!userExists) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        users = users.filter(user => user.username !== username);
+        await writeUsers(users);
+
+        res.status(200).json({ message: 'User deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Server error occurred while deleting user.' });
+    }
+});
+
+// COMMENTS
+
+
+
+// Serve static files
 app.use(express.static(path.join(__dirname, "client/public")));
