@@ -4,9 +4,10 @@
     "user": "admin",
     "content": "Hejo, hejp! Pierwszy post!",
     "hashtags": [
-      "first!"
+      "test",
+      "first"
     ],
-    "timestamp": "2025-01-31T00:09:18.278Z",
+    "timestamp": "2025-01-31T00:12:53.558Z",
     "edited": false
   },
   {

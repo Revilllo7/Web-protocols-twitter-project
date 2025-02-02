@@ -289,7 +289,7 @@ Group: Group 4
 
 4. **Profanity filter** - X pkt.
 
-- kurwa? --> **\***?
+- kurwa? --> *****?
   **Total for Inne**: X pkt.
 
 ## Aplikacja (2 pkt.)

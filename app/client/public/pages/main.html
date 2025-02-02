@@ -29,7 +29,7 @@
                 <div class="post-section">
                     <textarea id="post-text" placeholder="What's on your mind?"></textarea>
                     <input id="hashtags" placeholder="Enter hashtags (comma-separated)">
-                    <button onclick="addPost()">Post</button>
+                    <button type="button" onclick="addPost()">Post</button>
                 </div>
         
                 <div class="hashtags-section">
@@ -49,15 +49,15 @@
 
                     <!-- Room buttons -->
                     <div>
-                        <button class="room-button" data-room="room1">Room 1</button>
-                        <button class="room-button" data-room="room2">Room 2</button>
-                        <button class="room-button" data-room="room3">Room 3</button>
-                        <button class="room-button" data-room="room4">Room 4</button>
+                        <button type="button" class="room-button" data-room="room1">Room 1</button>
+                        <button type="button" class="room-button" data-room="room2">Room 2</button>
+                        <button type="button" class="room-button" data-room="room3">Room 3</button>
+                        <button type="button" class="room-button" data-room="room4">Room 4</button>
                     </div>
 
                     <!-- Message input -->
                     <input type="text" id="message-input" placeholder="Type a message">
-                    <button id="send-message-button" onclick="sendMessage()">Send</button>
+                    <button type="button" id="send-message-button" onclick="sendMessage()">Send</button>
 
                     <!-- Rooms -->
                     <div id="room-1" class="message-container">
