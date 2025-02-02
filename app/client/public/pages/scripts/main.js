@@ -56,7 +56,7 @@ function getCookie(name) {
 
 async function login(username, password) {
     try {
-        const response = await fetch("http://localhost:3000/login", {
+        const response = await fetch("https://localhost:3000/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -97,7 +97,7 @@ async function addPost() {
     console.log("Request Body:", { user: username, content, hashtags });
 
     try {
-        const response = await fetch("http://localhost:3000/posts", {
+        const response = await fetch("https://localhost:3000/posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -123,7 +123,7 @@ async function addPost() {
 
 async function loadPosts(filteredTag = null, searchQuery = "") {
     try {
-        const response = await fetch("http://localhost:3000/posts");
+        const response = await fetch("https://localhost:3000/posts");
         if (!response.ok) throw new Error("Failed to load posts");
         const posts = await response.json();
 
@@ -242,7 +242,8 @@ function displayTopHashtags(hashtagCounts) {
     });
 
     document.querySelectorAll(".top-hashtag-button").forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
             const selectedHashtag = button.dataset.hashtag;
             loadPosts(selectedHashtag);
         });
@@ -274,12 +275,13 @@ async function editPost(post) {
     postButton.removeEventListener("click", handleSave);
     postButton.addEventListener("click", handleSave);
 
-    async function handleSave() {
+    async function handleSave(event) {
+        event.preventDefault(); // Prevent the default form submission behavior
         try {
             const updatedContent = postTextElement.value.trim();
             if (updatedContent === post.content) return; // No change to save
 
-            const response = await fetch(`http://localhost:3000/posts/${post.id}`, {
+            const response = await fetch(`https://localhost:3000/posts/${post.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -319,7 +321,7 @@ async function removePost(postId) {
 
     try {
         console.log("Sending DELETE request...");
-        const response = await fetch(`http://localhost:3000/posts/${postId}`, {
+        const response = await fetch(`https://localhost:3000/posts/${postId}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, role })
@@ -340,7 +342,7 @@ async function removePost(postId) {
 
 // Fetch a post by ID
 async function fetchPostById(postId) {
-    const response = await fetch(`http://localhost:3000/posts/${postId}`);
+    const response = await fetch(`https://localhost:3000/posts/${postId}`);
     if (response.ok) {
         return response.json();
     }
@@ -349,6 +351,18 @@ async function fetchPostById(postId) {
 
 // Establish WebSocket connection to the server
 const socket = new WebSocket("ws://localhost:3001");
+
+socket.addEventListener("open", () => {
+    console.log("WebSocket connection established");
+});
+
+socket.addEventListener("close", () => {
+    console.log("WebSocket connection closed");
+});
+
+socket.addEventListener("error", (error) => {
+    console.error("WebSocket error:", error);
+});
 
 // Function to handle message sending in a room
 function sendMessage(event) {
@@ -404,7 +418,7 @@ async function switchRoom(roomId) {
 
         // Fetch and display messages for the selected room
         try {
-            const response = await fetch(`http://localhost:3000/rooms/${roomId}`);
+            const response = await fetch(`https://localhost:3000/rooms/${roomId}`);
             if (!response.ok) throw new Error("Failed to load messages");
             const messages = await response.json();
 
@@ -426,7 +440,8 @@ async function switchRoom(roomId) {
 document.addEventListener("DOMContentLoaded", () => {
     const roomButtons = document.querySelectorAll(".room-button");
     roomButtons.forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent the default link behavior
             let roomId = button.getAttribute("data-room");  // Get the room ID directly (room1, room2, room3, room4)
             roomId = roomId.replace('room', ''); // Extract the number from the room ID
             switchRoom(roomId);  // Pass the roomId directly to switchRoom

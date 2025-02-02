@@ -480,3 +480,7 @@
     margin-bottom: 0.5rem;
     border-bottom: 1px solid #eee;
 }
+
+#message-container {
+    background-color: red;
+}

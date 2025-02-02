@@ -38,5 +38,15 @@
     "username": "riskcapcap",
     "password": "$2b$10$BkcvHBcRuMgUgrNBwQG09esFKcEvNfxZl94h6Bbo5VKHeOSK.2/la",
     "role": "user"
+  },
+  {
+    "username": "benio",
+    "password": "$2b$10$CR6hvt2PvQR5OzG0iFrPXO5XmhW9Mujpgv0QO6hVs8zqsJfYB.8SS",
+    "role": "user"
+  },
+  {
+    "username": "test",
+    "password": "$2b$10$u3fAuKV3sPEtC11o3vG8Pe7CnCTl.vHRXUmPDrgLxWhK0no420PnS",
+    "role": "user"
   }
 ]

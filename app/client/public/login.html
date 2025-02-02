@@ -12,12 +12,12 @@
         <h2>Login</h2>
         <input id="login-username" placeholder="Enter your username">
         <input id="login-password" type="password" placeholder="Enter your password">
-        <button onclick="login()">Login</button>
+        <button type="button" onclick="login()">Login</button>
 
         <h2>Register</h2>
         <input id="register-username" placeholder="Choose a username">
         <input id="register-password" type="password" placeholder="Choose a password">
-        <button onclick="register()">Register</button>
+        <button type="button" onclick="register()">Register</button>
     </div>
 
     <a class="link" href="./pages/help.html">Problem logging in? Go to help!</a>
@@ -41,7 +41,7 @@
             const password = document.getElementById("register-password").value;
 
             try {
-                const response = await fetch("http://localhost:3000/register", {
+                const response = await fetch("https://localhost:3000/register", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -72,13 +72,14 @@
                 return;
             }
 
-            fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            })
-            .then(response => response.json())
-            .then(data => {
+            try {
+                const response = await fetch('https://localhost:3000/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
                 if (data.success) {
                     setCookie("username", username, 7);
                     
@@ -90,12 +91,14 @@
                     setCookie("userProfilePicture", identiconUrl, 7);
                     
                     // alert('Login successful');
-                    window.location.href = "./pages/main.html";
+                    window.location.href = "./pages/main.html"; // Use href for redirection
                 } else {
                     alert(data.message); // Show the error message (e.g. "Invalid username")
                 }
-            })
-            .catch(error => console.error('Error:', error));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error logging in: ' + error.message);
+            }
         }
 
     </script>

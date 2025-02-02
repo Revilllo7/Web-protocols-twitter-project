@@ -2,11 +2,12 @@ import express from "express";
 import https from "https";
 import cors from "cors";
 import path from "path";
-import { promises as fs } from "fs";
+import fs from "fs";
+import { promises as fsPromises } from "fs";
 import bcrypt from "bcrypt";
 import { WebSocketServer } from "ws";
 import { v4 as uuidv4 } from "uuid";
-import Filter from "bad-words";
+import { Filter } from "bad-words";
 import { fileURLToPath } from "url";
 import winston from "winston";
 import dotenv from "dotenv";
@@ -27,20 +28,40 @@ const __dirname = path.dirname(__filename);
 
 const USERS_FILE = path.join(__dirname, "users.json");
 const POSTS_FILE = path.join(__dirname, "posts.json");
-const ROOMS_FILE = path.join(__dirname, "rooms.json");  // Added rooms.json for saving messages
+const ROOMS_FILE = path.join(__dirname, "rooms.json");
+const COMMENTS_FILE = path.join(__dirname, "comments.json");
 
 const corsOptions = {
-    origin: "http://localhost:5500", // Allow requests from the frontend (port 5500)
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these HTTP methods
-    allowedHeaders: ["Content-Type"], // Allow Content-Type header
+    origin: "http://localhost:5501", // Make sure this matches your frontend URL exactly
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 };
+app.use(cors(corsOptions));
 
-app.use(cors(corsOptions)); // Apply CORS middleware with these options
+app.use((req, res, next) => {
+    console.log(`${req.method} request to ${req.url}`);
+    next();
+});
 
-// Middleware
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Credentials", "true"); // Allow cookies/auth headers
+    next();
+});
+
+app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.sendStatus(204); // No content response
+});
+
 app.use(express.json());
 
-// Initialize the logger
 const logger = winston.createLogger({
     level: "info",
     format: winston.format.json(),
@@ -65,31 +86,34 @@ app.use((err, req, res, next) => {
 // Check if the users.json and rooms.json files exist, if not, create them
 const fileExists = async (filePath) => {
     try {
-        await fs.access(filePath); // Check if the file exists
+        await fsPromises.access(filePath);
         return true;
     } catch (error) {
-        return false; // File does not exist
+        return false;
     }
 };
 
 const initFiles = async () => {
     if (!await fileExists(USERS_FILE)) {
-        await fs.writeFile(USERS_FILE, "[]"); // Create an empty JSON array if missing
+        await fsPromises.writeFile(USERS_FILE, "[]");
     }
     if (!await fileExists(POSTS_FILE)) {
-        await fs.writeFile(POSTS_FILE, "[]"); // Create an empty JSON array if missing
+        await fsPromises.writeFile(POSTS_FILE, "[]");
     }
     if (!await fileExists(ROOMS_FILE)) {
-        await fs.writeFile(ROOMS_FILE, "{}"); // Create an empty object if missing
+        await fsPromises.writeFile(ROOMS_FILE, "{}");
+    }
+    if (!await fileExists(COMMENTS_FILE)) {
+        await fsPromises.writeFile(COMMENTS_FILE, "{}");
     }
 };
 
-initFiles(); // Initialize files if needed
+initFiles();
 
 // Read users from file
 const readUsers = async () => {
     try {
-        const data = await fs.readFile(USERS_FILE, "utf8");
+        const data = await fsPromises.readFile(USERS_FILE, "utf8");
         return JSON.parse(data);
     } catch (err) {
         return [];
@@ -99,7 +123,7 @@ const readUsers = async () => {
 // Write users to file
 async function writeUsers(users) {
     try {
-        await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+        await fsPromises.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
     } catch (error) {
         console.error("Error writing to users file:", error);
         throw error;
@@ -109,7 +133,7 @@ async function writeUsers(users) {
 // Function to write updated posts to the posts.json file
 async function writePosts(posts) {
     try {
-        await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), 'utf8');
+        await fsPromises.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), 'utf8');
     } catch (err) {
         console.error("Error writing to posts file:", err);
         throw err;
@@ -119,7 +143,7 @@ async function writePosts(posts) {
 // Function to read posts from the posts.json file
 async function readPosts() {
     try {
-        const data = await fs.readFile(POSTS_FILE, 'utf8');
+        const data = await fsPromises.readFile(POSTS_FILE, 'utf8');
         return JSON.parse(data);
     } catch (err) {
         console.error("Error reading posts file:", err);
@@ -130,52 +154,60 @@ async function readPosts() {
 // Function to read messages from rooms.json
 async function readRooms() {
     try {
-        const data = await fs.readFile(ROOMS_FILE, 'utf8');
+        const data = await fsPromises.readFile(ROOMS_FILE, 'utf8');
         return JSON.parse(data);
     } catch (err) {
-        return {};  // Return empty object if no rooms are found
+        return {};
     }
 }
 
 // Function to write messages to rooms.json
 async function writeRooms(rooms) {
     try {
-        await fs.writeFile(ROOMS_FILE, JSON.stringify(rooms, null, 2));
+        await fsPromises.writeFile(ROOMS_FILE, JSON.stringify(rooms, null, 2));
     } catch (err) {
         console.error("Error writing to rooms file:", err);
         throw err;
     }
 }
 
-// Register endpoint
-app.post("/register", async (req, res) => {
-    const { username, password } = req.body;
+app.post('/register', (req, res) => {
+    const { username, password, role } = req.body;
+
     if (!username || !password) {
-        console.log("Missing username or password");
-        return res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: 'Username, password, and role are required.' });
     }
 
-    const users = await readUsers(); // Ensure you're reading users asynchronously
-    const existingUser = users.find(user => user.username === username);  // Check if the user already exists
+    fs.readFile('users.json', 'utf8', (err, data) => {
+        if (err && err.code !== 'ENOENT') {
+            return res.status(500).json({ message: 'Error reading users file.' });
+        }
 
-    if (existingUser) {
-        console.log("Username already taken:", username);
-        return res.status(409).json({ message: "Username already exists." });
-    }
+        let users = [];
+        if (!err) {
+            try {
+                users = JSON.parse(data);
+            } catch (parseErr) {
+                return res.status(500).json({ message: 'Error parsing users file.' });
+            }
+        }
 
-    // Hash the password with bcrypt
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = { username, password: hashedPassword, role: 'user' };
+        if (users.some(user => user.username === username)) {
+            return res.status(400).json({ message: 'Username already exists.' });
+        }
+
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        const newUser = { username, password: hashedPassword, role: role || 'user' };
+
         users.push(newUser);
 
-        await writeUsers(users);  // Ensure you're writing users back to the file
-        console.log("New user registered:", username);
-        res.status(201).json({ message: "User registered successfully" });
-    } catch (error) {
-        console.error("Error hashing password or saving user:", error);
-        res.status(500).json({ message: "Server error" });
-    }
+        fs.writeFile('users.json', JSON.stringify(users, null, 2), err => {
+            if (err) {
+                return res.status(500).json({ message: 'Error saving user.' });
+            }
+            res.status(201).json({ message: 'User registered successfully.' });
+        });
+    });
 });
 
 // Login endpoint
@@ -183,8 +215,8 @@ app.post("/login", async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ message: "Login failed. Username and password are required." });
 
-    const users = await readUsers();  // Ensure you're reading users asynchronously
-    const user = users.find(user => user.username === username);  // Compare usernames
+    const users = await readUsers();
+    const user = users.find(user => user.username === username);
     
     if (!user) {
         console.log("Invalid username attempt:", username);
@@ -251,9 +283,9 @@ wss.on("connection", (ws) => {
     });
 });
 
-console.log('WebSocket server is running on ws://localhost:3001');
+console.log('WebSocket server is running on wss://localhost:3001');
 
-// WebSocket upgrade handling for HTTP server
+// WebSocket upgrade handling for HTTPS server
 const server = https.createServer(options, app);
 server.listen(PORT, () => {
     console.log(`Server running on https://localhost:${PORT}`);
@@ -269,8 +301,8 @@ server.on("upgrade", (request, socket, head) => {
 app.get("/posts", async (req, res) => {
     try {
         const posts = await readPosts();
-        posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sorting posts by timestamp
-        res.json(posts); // Return all posts
+        posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        res.json(posts);
     } catch (err) {
         res.status(500).json({ message: "Error loading posts" });
     }
@@ -284,7 +316,7 @@ app.get("/posts/:id", async (req, res) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    res.json(post); // Return the post if found
+    res.json(post);
 });
 
 // POST endpoint to add new posts
@@ -312,8 +344,7 @@ app.post("/posts", async (req, res) => {
 
     posts.push(newPost);
 
-    // Write the updated posts to the file
-    await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
+    await fsPromises.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
 
     res.status(201).json(newPost);
 });
@@ -324,11 +355,11 @@ app.put("/posts/:id", async (req, res) => {
     const { content } = req.body;
     const posts = await readPosts();
 
+
     const post = posts.find(p => p.id === postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    // Check if the logged-in user is the post author or an admin
-    const username = req.body.username; // Assume you send the username in the request body
+    const username = req.body.username;
     if (post.user !== username && username !== "admin") {
         return res.status(403).json({ message: "You are not authorized to edit this post" });
     }
@@ -340,7 +371,7 @@ app.put("/posts/:id", async (req, res) => {
     post.edited = true;
     post.timestamp = new Date().toISOString();
 
-    await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
+    await fsPromises.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2));
     res.status(200).json(post);
 });
 
@@ -362,7 +393,7 @@ app.delete("/posts/:id", async (req, res) => {
         }
 
         const updatedPosts = posts.filter(p => p.id !== postId);
-        await writePosts(updatedPosts); // This writes the updated posts back to the file
+        await writePosts(updatedPosts);
 
         res.status(200).json({ message: "Post deleted successfully" });
     } catch (error) {
@@ -380,6 +411,54 @@ app.get("/rooms/:id", async (req, res) => {
         res.json(messages);
     } catch (err) {
         res.status(500).json({ message: "Error loading messages" });
+    }
+});
+
+// EDIT PASSWORD
+app.put('/edit-password', async (req, res) => {
+    const { username, newPassword } = req.body;
+
+    if (!username || !newPassword) {
+        return res.status(400).json({ message: 'Username and new password are required.' });
+    }
+
+    try {
+        const users = await readUsers();
+        const user = users.find(user => user.username === username);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        user.password = bcrypt.hashSync(newPassword, 10);
+
+        await writeUsers(users);
+        res.status(200).json({ message: 'Password updated successfully.' });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({ message: 'Server error occurred while updating password.' });
+    }
+});
+
+// DELETE USER
+app.delete('/users/:username', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        let users = await readUsers();
+        const userExists = users.some(user => user.username === username);
+
+        if (!userExists) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        users = users.filter(user => user.username !== username);
+        await writeUsers(users);
+
+        res.status(200).json({ message: 'User deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Server error occurred while deleting user.' });
     }
 });
 

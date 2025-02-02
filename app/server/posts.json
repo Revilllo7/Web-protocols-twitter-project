@@ -151,5 +151,25 @@
     "hashtags": [],
     "timestamp": "2025-01-31T00:45:05.798Z",
     "edited": false
+  },
+  {
+    "id": "1d87879b-0f65-4324-bc8f-040722f0d82b",
+    "user": "benio",
+    "content": "Kocham lige legend!",
+    "hashtags": [
+      "lol"
+    ],
+    "timestamp": "2025-02-02T17:21:45.547Z",
+    "edited": false
+  },
+  {
+    "id": "d8ab6607-9501-48d8-855f-7a82c14479c2",
+    "user": "test",
+    "content": "mam problemy z websocketem robiącym disconnect i reconnect ;c",
+    "hashtags": [
+      "gonnakms"
+    ],
+    "timestamp": "2025-02-02T17:44:02.689Z",
+    "edited": false
   }
 ]
