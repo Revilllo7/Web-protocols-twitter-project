@@ -48,5 +48,10 @@
     "username": "test",
     "password": "$2b$10$u3fAuKV3sPEtC11o3vG8Pe7CnCTl.vHRXUmPDrgLxWhK0no420PnS",
     "role": "user"
+  },
+  {
+    "username": "Azyr",
+    "password": "$2b$10$Q/ZCC/MIwEwS5MIwSPd9tuzASjTd1XJvdTOFWYNUDH2f/7Hq06KxW",
+    "role": "user"
   }
 ]

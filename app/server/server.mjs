@@ -32,7 +32,7 @@ const ROOMS_FILE = path.join(__dirname, "rooms.json");
 const COMMENTS_FILE = path.join(__dirname, "comments.json");
 
 const corsOptions = {
-    origin: "http://localhost:5501", // Make sure this matches your frontend URL exactly
+    origin: "http://localhost:5500", 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Origin", "http://localhost:5500"); 
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true"); // Allow cookies/auth headers
@@ -53,7 +53,7 @@ app.use((req, res, next) => {
 });
 
 app.options("*", (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); // Adjust to match frontend URL
+    res.header("Access-Control-Allow-Origin", "http://localhost:5501"); 
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.header("Access-Control-Allow-Credentials", "true");
@@ -461,10 +461,6 @@ app.delete('/users/:username', async (req, res) => {
         res.status(500).json({ message: 'Server error occurred while deleting user.' });
     }
 });
-
-// COMMENTS
-
-
 
 // Serve static files
 app.use(express.static(path.join(__dirname, "client/public")));
