@@ -2,6 +2,15 @@ Author: Oliver Gruba
 Group: 4
 
 ---
+How to run:
+1. go into the app/
+2. use: `python3 serve_client.py`
+3. open in browser
+4. go to app/server/
+5. use: `node server.mjs`
+6. enjoy
+
+---
 
 # Evaluation Summary
 
@@ -10,7 +19,7 @@ Group: 4
 1. **CRUD Operations**:
    - **CREATE**:
      - Register endpoint (`/register`) - 0.13 pkt.
-       ```http
+       ```javascript
        POST /register
        {
          "username": "newUser",
@@ -18,7 +27,7 @@ Group: 4
        }
        ```
      - Add post endpoint (`/posts`) - 0.13 pkt.
-       ```http
+       ```javascript
        POST /posts
        {
          "user": "username",
@@ -33,22 +42,22 @@ Group: 4
      - Total: 0.39 pkt.
    - **READ**:
      - Fetch all posts (`/posts`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /posts
        ```
      - Fetch specific post by ID (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /posts/1
        ```
      - Fetch messages for a specific room (`/rooms/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /rooms/1
        ```
      - Total: 0.39 pkt.
    - **UPDATE**:
 
      - Update post endpoint (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        PUT /posts/1
        {
          "content": "Updated content",
@@ -57,15 +66,15 @@ Group: 4
        ```
      - Update user password (`/username/`) - 0.13 pkt.
 
-       ```http
-       app.put('/edit-password'
+       ```javascript
+          app.put('/edit-password', async (req, res) => {
        ```
 
      - Total: 0.26 pkt.
 
    - **DELETE**:
      - Delete post endpoint (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        DELETE /posts/1
        {
          "username": "username",
@@ -73,8 +82,8 @@ Group: 4
        }
        ```
      - Delete user account (`/users/:username`) - 0.13 pkt.
-     ```http
-       app.delete('/users/:username',
+     ```javascript
+       app.delete('/users/:username', async (req, res) => {
      ```
      - Total: 0.26 pkt.
 2. **Search Functionality**:
@@ -89,7 +98,7 @@ Group: 4
    - Total: 0.25 pkt.
 3. **Login Functionality**:
    - Login endpoint (`/login`) - 0.5 pkt.
-     ```http
+     ```javascript
      POST /login
      {
        "username": "username",
@@ -114,7 +123,7 @@ Group: Group 4
 1. **CRUD Operations**:
    - **CREATE**:
      - Register endpoint (`/register`) - 0.13 pkt.
-       ```http
+       ```javascript
        POST /register
        {
          "username": "newUser",
@@ -122,7 +131,7 @@ Group: Group 4
        }
        ```
      - Add post endpoint (`/posts`) - 0.13 pkt.
-       ```http
+       ```javascript
        POST /posts
        {
          "user": "username",
@@ -137,21 +146,21 @@ Group: Group 4
      - Total: 0.39 pkt.
    - **READ**:
      - Fetch all posts (`/posts`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /posts
        ```
      - Fetch specific post by ID (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /posts/1
        ```
      - Fetch messages for a specific room (`/rooms/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        GET /rooms/1
        ```
      - Total: 0.39 pkt.
    - **UPDATE**:
      - Update post endpoint (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        PUT /posts/1
        {
          "content": "Updated content",
@@ -161,7 +170,7 @@ Group: Group 4
      - Total: 0.13 pkt.
    - **DELETE**:
      - Delete post endpoint (`/posts/:id`) - 0.13 pkt.
-       ```http
+       ```javascript
        DELETE /posts/1
        {
          "username": "username",
@@ -181,7 +190,7 @@ Group: Group 4
    - Total: 0.25 pkt.
 3. **Login Functionality**:
    - Login endpoint (`/login`) - 0.5 pkt.
-     ```http
+     ```javascript
      POST /login
      {
        "username": "username",
@@ -199,7 +208,7 @@ Group: Group 4
      - fetch posts
      - WebSocket messages.
    - Total: X pkt.
-     **Total for HTTP**: 0.39 + 0.39 + 0.13 + 0.13 + 0.5 + 0.5 + 3 = 6 pkt.
+     **Total for HTTP**: = X pkt.
 
 ## MQTT, WebSocket (6 pkt.)
 
@@ -309,4 +318,4 @@ Group: Group 4
 - **Aplikacja**: X pkt.
   **Max**: 6 + 6 + 6 + 2 = 20 pkt.
   **Expected**:
-  **Total**: 6 + 4 + 3 + 2 = 15 pkt.
+  **Total**: 4 + 6 + 3 + 2 = 15 pkt.
