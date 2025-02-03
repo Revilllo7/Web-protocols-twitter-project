@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = getCookie("username");  // Read from cookies
-    const role = getCookie("role"); // Read user role from cookies
+    // also read role from cookies
     
     if (username) {
         const greetingElement = document.getElementById("greeting");
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const roomButtons = document.querySelectorAll(".room-button");
     roomButtons.forEach(button => {
         button.addEventListener("click", (event) => {
-            event.preventDefault(); // Prevent default action
+            event.preventDefault(); 
             let roomId = button.getAttribute("data-room");  // Get the room ID directly (room1, room2, room3, room4)
             roomId = roomId.replace('room', ''); // Extract the number from the room ID
             switchRoom(roomId);  // Pass the roomId directly to switchRoom
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Utility function to set a cookie
 function setCookie(name, value, days = 7) {
     const expires = new Date();
-    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000)); // Set expiry date
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000)); 
     document.cookie = `${name}=${value}; path=/; expires=${expires.toUTCString()}; Secure; SameSite=Lax`;
 }
 
@@ -340,7 +340,7 @@ function displayTopHashtags(hashtagCounts) {
 
     document.querySelectorAll(".top-hashtag-button").forEach(button => {
         button.addEventListener("click", (event) => {
-          
+        
             event.preventDefault();
 
             const selectedHashtag = button.dataset.hashtag;
@@ -349,10 +349,10 @@ function displayTopHashtags(hashtagCounts) {
     });
 }
 
-// Modified `editPost` function to allow admin and owner editing
+// EditPost function to allow admin and owner editing
 async function editPost(post) {
     const username = getCookie("username");
-    const role = getCookie("role"); // Assuming you store the role in a cookie after login
+    const role = getCookie("role");
 
     console.log("User Role:", role);
     if (!role) {
@@ -366,17 +366,17 @@ async function editPost(post) {
     }
 
     const postTextElement = document.getElementById("post-text");
-    postTextElement.value = post.content; // Use 'value' for textarea content
+    postTextElement.value = post.content; 
 
     const postButton = document.getElementById("post-button");
-    postButton.textContent = "Save"; // Change the button text to "Save"
+    postutton.textContent = "Save"; // Change the button text to "Save"
 
     postButton.removeEventListener("click", handleSave);
     postButton.addEventListener("click", handleSave);
 
     async function handleSave(event) {
 
-        event.preventDefault(); // Prevent the default form submission behavior
+        event.preventDefault(); 
 
         try {
             const updatedContent = postTextElement.value.trim();
@@ -402,7 +402,7 @@ async function editPost(post) {
     }
 }
 
-// Modified `removePost` function to allow admin to delete any post
+// function to allow admin to delete any post or user theirs
 async function removePost(postId) {
     const username = getCookie("username");
     const role = getCookie("role");
@@ -451,24 +451,9 @@ async function fetchPostById(postId) {
 
 }
 
-// Establish WebSocket connection to the server
-const socket = new WebSocket("ws://localhost:3001");
-
-socket.addEventListener("open", () => {
-    console.log("WebSocket connection established");
-});
-
-socket.addEventListener("close", () => {
-    console.log("WebSocket connection closed");
-});
-
-socket.addEventListener("error", (error) => {
-    console.error("WebSocket error:", error);
-});
-
 // Function to handle message sending in a room
 function sendMessage(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
 
     const messageInput = document.getElementById("message-input");
     const message = messageInput.value.trim();
@@ -487,7 +472,7 @@ function sendMessage(event) {
     messageInput.value = "";
 }
 
-// A simple function to display messages in the respective room
+// Function to display messages in the respective room
 function displayMessage(room, message) {
     const roomDiv = document.querySelector(`#room-${room} .message-list`);
     const messageElement = document.createElement("div");
